@@ -2,11 +2,11 @@
 
 ## 1.1.1 (2026-10-04)
 
-- 창 제목에 버전이 보입니다. 지금 쓰고 계신 판이 몇인지 바로 알 수 있습니다.
+- 창 제목에 버전이 보입니다.
 
 ---
 
-- The window title now shows the version, so you can tell which build you are running.
+- The window title now shows the version.
 
 ---
 
