@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Media;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -65,7 +66,8 @@ namespace CS2PracticeHost
 
         private void BuildLayout()
         {
-            Text = Program.Title;
+            // 포터블 exe라 설치 목록에도 안 뜬다. 쓰는 판이 몇인지 볼 곳이 창 제목뿐이다
+            Text = Program.Title + " " + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
             Font = new Font(Strings.UiFont, 10);
             ClientSize = new Size(424, 612);
             FormBorderStyle = FormBorderStyle.FixedSingle;

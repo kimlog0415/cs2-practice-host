@@ -1,5 +1,15 @@
 # 변경 내역 / Changelog
 
+## 1.1.1 (2026-10-04)
+
+- 창 제목에 버전이 보입니다. 지금 쓰고 계신 판이 몇인지 바로 알 수 있습니다.
+
+---
+
+- The window title now shows the version, so you can tell which build you are running.
+
+---
+
 ## 1.1.0 (2026-10-03)
 
 - 영어를 지원합니다. 오른쪽 위 `EN` 버튼으로 바꿀 수 있고, 처음 켤 때는 Windows 표시 언어를 따릅니다.
