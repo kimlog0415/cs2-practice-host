@@ -12,8 +12,6 @@ namespace CS2PracticeHost
     /// </summary>
     internal static class UpdateCheck
     {
-        public const string DownloadPage = "https://github.com/kimlog0415/cs2-practice-host/releases/latest";
-
         private const string LatestApi = "https://api.github.com/repos/kimlog0415/cs2-practice-host/releases/latest";
 
         /// <summary>새 버전이 있으면 그 번호, 없거나 확인하지 못하면 null.</summary>

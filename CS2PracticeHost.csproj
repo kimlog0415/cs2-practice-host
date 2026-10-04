@@ -18,7 +18,7 @@
     <Description>Counter-Strike 2 연습 서버 방장 도우미</Description>
     <!-- 파일 속성에서도 비공식임이 보이게 한다 -->
     <Copyright>LOGSTONE · 비공식 도구, Valve 및 Counter-Strike와 무관</Copyright>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
   </PropertyGroup>
 
   <ItemGroup>

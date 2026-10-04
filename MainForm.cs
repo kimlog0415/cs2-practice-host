@@ -133,7 +133,7 @@ namespace CS2PracticeHost
             _update.Size = new Size(384, 22);
             _update.TextAlign = ContentAlignment.MiddleCenter;
             _update.Visible = false;
-            _update.LinkClicked += (s, e) => OpenInBrowser(UpdateCheck.DownloadPage);
+            _update.LinkClicked += (s, e) => OpenInBrowser(SiteUrl);
             Controls.Add(_update);
 
             SetStaticText();
@@ -522,8 +522,13 @@ namespace CS2PracticeHost
             MessageBox.Show(text, Program.Title, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        /// <summary>사용법은 웹에 둔다. 설명이 바뀔 때마다 앱을 다시 내보내지 않아도 된다.</summary>
-        private static string HelpUrl
+        /// <summary>
+        /// 사용법과 받는 버튼이 다 있는 우리 페이지. 설명이 바뀔 때마다 앱을 다시 내보내지 않아도 된다.
+        /// 새 버전 알림도 여기로 보낸다 — 저장소 릴리스 페이지는 받을 것이 넷이고(소스 묶음 둘은
+        /// GitHub이 자동으로 붙여 뺄 수 없다) 그중 맞는 건 하나라, 묻지도 않고 뜨는 알림이
+        /// 보낼 곳이 아니다.
+        /// </summary>
+        private static string SiteUrl
         {
             get { return "https://cs2.logstone.net/" + (Strings.En ? "?lang=en" : ""); }
         }
@@ -552,7 +557,7 @@ namespace CS2PracticeHost
 
         private void OnHelpClick(object sender, EventArgs e)
         {
-            string url = HelpUrl;
+            string url = SiteUrl;
             try { Process.Start(url); }
             catch (Exception)
             {

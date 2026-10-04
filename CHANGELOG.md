@@ -1,5 +1,15 @@
 # 변경 내역 / Changelog
 
+## 1.1.2 (2026-10-04)
+
+- 새 버전 알림을 누르면 받는 버튼이 하나인 페이지가 열립니다.
+
+---
+
+- The update notice now opens the page with the download button.
+
+---
+
 ## 1.1.1 (2026-10-04)
 
 - 창 제목에 버전이 보입니다.
