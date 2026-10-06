@@ -22,6 +22,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- tests는 따로 빌드한다. 안 빼면 SDK가 폴더 전체의 .cs를 긁어가 앱에 섞인다 -->
+    <Compile Remove="tests\**" />
+    <None Remove="tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- settings.json 직렬화 (NuGet 없이 쓰려고 .NET Framework 내장 것을 쓴다) -->
     <Reference Include="System.Runtime.Serialization" />
     <!-- 실행 중인 cs2.exe의 명령줄을 읽어 -condebug 여부를 확인 -->

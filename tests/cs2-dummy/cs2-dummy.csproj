@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <!-- 앱이 Process.GetProcessesByName("cs2")로 찾으므로 이름이 cs2여야 한다 -->
+    <AssemblyName>cs2</AssemblyName>
+    <RootNamespace>Cs2Dummy</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Dummy.cs" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>Checks</AssemblyName>
+    <RootNamespace>CS2PracticeHost</RootNamespace>
+    <StartupObject>CS2PracticeHost.Checks</StartupObject>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <!-- update 확인이 이 번호를 「지금 쓰는 사람의 판」으로 쓴다.
+         낮게 두면 늘 「새 버전 있음」이 나와야 맞다. 반대 경우는 -p:Version=99.0.0 으로. -->
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 앱의 실제 소스를 그대로 묶는다. Program.cs만 뺀다(자기 Main이 있어서 — Stub.cs가 대신한다) -->
+    <Compile Include="..\..\CfgWriter.cs" />
+    <Compile Include="..\..\ConsoleLog.cs" />
+    <Compile Include="..\..\Cs2Paths.cs" />
+    <Compile Include="..\..\Cs2Process.cs" />
+    <Compile Include="..\..\Cs2Watcher.cs" />
+    <Compile Include="..\..\GameData.cs" />
+    <Compile Include="..\..\MainForm.cs" />
+    <Compile Include="..\..\Settings.cs" />
+    <Compile Include="..\..\Strings.cs" />
+    <Compile Include="..\..\UpdateCheck.cs" />
+    <Compile Include="*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Management" />
+  </ItemGroup>
+
+</Project>
