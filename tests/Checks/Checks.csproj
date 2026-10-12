@@ -27,6 +27,7 @@
     <Compile Include="..\..\Settings.cs" />
     <Compile Include="..\..\Strings.cs" />
     <Compile Include="..\..\UpdateCheck.cs" />
+    <Compile Include="..\..\WorkshopMaps.cs" />
     <Compile Include="*.cs" />
   </ItemGroup>
 

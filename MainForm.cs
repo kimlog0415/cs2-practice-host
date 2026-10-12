@@ -221,8 +221,10 @@ namespace CS2PracticeHost
         /// <summary>설치된 맵만 보여준다. 모드를 바꿔도 같은 맵이 있으면 유지한다.</summary>
         private void FillMaps(string wantedId)
         {
+            // 받아 둔 창작마당 맵은 모드와 상관없이 뒤에 붙인다. 어느 모드로 열지는 방장이 고른다
             _maps = SelectedMode.Maps
                 .Where(m => File.Exists(Path.Combine(Cs2Paths.MapsDir, m.Id + ".vpk")))
+                .Concat(WorkshopMaps.Installed())
                 .ToArray();
 
             _map.Items.Clear();

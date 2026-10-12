@@ -6,12 +6,31 @@ namespace CS2PracticeHost
 {
     internal sealed class GameMap
     {
+        /// <summary>`+map`·`changelevel`에 그대로 넘기는 값. 창작마당은 `workshop/번호/이름` 꼴이다.</summary>
         public string Id;
         public string Ko;
         public string En;
+
+        /// <summary>창작마당 맵이면 그 vpk 파일 이름. 기본 맵은 null.</summary>
+        public string WorkshopFile;
+
         public GameMap(string id, string ko, string en) { Id = id; Ko = ko; En = en; }
 
-        public string Name { get { return Strings.En ? En : Ko; } }
+        public bool IsWorkshop { get { return WorkshopFile != null; } }
+
+        public string Name
+        {
+            get { return IsWorkshop ? Strings.WorkshopMap(WorkshopFile) : (Strings.En ? En : Ko); }
+        }
+
+        /// <summary>
+        /// 받아 둔 창작마당 맵. 제목은 Steam에 물어봐야 알 수 있어서 파일 이름을 그대로 보여 준다
+        /// — 받은 사람은 그걸로 자기 맵을 알아본다.
+        /// </summary>
+        public static GameMap Workshop(string id, string fileName)
+        {
+            return new GameMap("workshop/" + id + "/" + fileName, null, null) { WorkshopFile = fileName };
+        }
     }
 
     internal sealed class GameMode

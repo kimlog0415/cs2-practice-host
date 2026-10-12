@@ -19,6 +19,21 @@ namespace CS2PracticeHost
         public static string MapsDir { get { return Path.Combine(CsgoDir, "maps"); } }
         public static string ConsoleLog { get { return Path.Combine(CsgoDir, "console.log"); } }
 
+        /// <summary>
+        /// 창작마당 맵이 받아지는 곳. 설치 폴더가 &lt;라이브러리&gt;\steamapps\common\... 이라
+        /// 두 칸 위가 steamapps다. 같은 라이브러리에 받아지므로 이 경로로 찾는다.
+        /// </summary>
+        public static string WorkshopDir
+        {
+            get
+            {
+                if (InstallDir == null) return null;
+                DirectoryInfo common = Directory.GetParent(InstallDir);
+                DirectoryInfo steamapps = common == null ? null : common.Parent;
+                return steamapps == null ? null : Path.Combine(steamapps.FullName, @"workshop\content\730");
+            }
+        }
+
         public static bool Found { get { return InstallDir != null && SteamExe != null; } }
 
         /// <summary>레지스트리 → 라이브러리 폴더 순으로 찾고, 저장해 둔 수동 경로도 받아들인다.</summary>

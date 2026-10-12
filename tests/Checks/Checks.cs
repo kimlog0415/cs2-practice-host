@@ -21,7 +21,7 @@ namespace CS2PracticeHost
             Application.EnableVisualStyles();
 
             string mode = args.Length > 0 ? args[0] : "all";
-            Console.WriteLine("확인 대상: " + (mode == "all" ? "lang, state, update" : mode));
+            Console.WriteLine("확인 대상: " + (mode == "all" ? "lang, maps, state, update" : mode));
             Console.WriteLine("이 확인기 버전: " + Assembly.GetExecutingAssembly().GetName().Version);
             Console.WriteLine();
 
@@ -29,6 +29,7 @@ namespace CS2PracticeHost
             try
             {
                 if (mode == "all" || mode == "lang") LangChecks.Run();
+                if (mode == "all" || mode == "maps") MapChecks.Run();
                 if (mode == "all" || mode == "state") StateChecks.Run(args.Skip(1).FirstOrDefault());
                 if (mode == "all" || mode == "update") UpdateChecks.Run();
             }
@@ -106,7 +107,9 @@ namespace CS2PracticeHost
 
         public static string Install(params string[] extraMaps)
         {
-            string root = Path.Combine(Path.GetTempPath(), Root, "Counter-Strike Global Offensive");
+            // 실제 배치를 그대로 흉내낸다 — 창작마당 폴더가 두 칸 위 steamapps 아래에 생겨야 한다
+            string root = Path.Combine(Path.GetTempPath(), Root,
+                "steamapps", "common", "Counter-Strike Global Offensive");
             string maps = Path.Combine(root, @"game\csgo\maps");
             Directory.CreateDirectory(maps);
             Directory.CreateDirectory(Path.Combine(root, @"game\csgo\cfg"));
@@ -128,6 +131,20 @@ namespace CS2PracticeHost
             if (!Cs2Paths.UseManual(root))
                 throw new Exception("가짜 설치 폴더를 앱이 안 받아들였다: " + root);
             return root;
+        }
+
+        /// <summary>받아 둔 창작마당 맵 흉내. 폴더 이름이 구독 번호, 그 안에 vpk가 있으면 받은 것이다.</summary>
+        public static void WorkshopMaps(params string[] idSlashFile)
+        {
+            string root = Cs2Paths.WorkshopDir;
+            if (root == null) throw new Exception("창작마당 폴더를 못 찾았다 — 설치 폴더가 먼저 잡혀야 한다");
+            foreach (string pair in idSlashFile)
+            {
+                string[] parts = pair.Split('/');
+                string dir = Path.Combine(root, parts[0]);
+                Directory.CreateDirectory(dir);
+                File.WriteAllText(Path.Combine(dir, parts[1] + ".vpk"), "");
+            }
         }
 
         public static void Clean()

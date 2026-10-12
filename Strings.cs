@@ -44,6 +44,12 @@ namespace CS2PracticeHost
 
         public static string BotCountDefault { get { return T("게임 기본값", "Game default"); } }
 
+        /// <summary>받아 둔 창작마당 맵. 기본 맵과 섞이지 않게 앞에 표시를 붙인다.</summary>
+        public static string WorkshopMap(string fileName)
+        {
+            return T("창작마당 · " + fileName, "Workshop · " + fileName);
+        }
+
         public static string BotCount(int n)
         {
             if (!En) return n + " 명";
