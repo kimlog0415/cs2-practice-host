@@ -18,7 +18,7 @@ namespace CS2PracticeHost
 
             SplitVpkCountsOnce();
             FoundInList();
-            IdIsWorkshopForm();
+            WorkshopLaunchesByNumber();
             NotMixedWithBuiltIn();
             LanguageTogglesThePrefix();
             SortedByModeTag();
@@ -118,14 +118,24 @@ namespace CS2PracticeHost
                       "aim_botz, de_big, de_cache_night, yprac_mirage");
         }
 
-        private static void IdIsWorkshopForm()
+        /// <summary>
+        /// 창작마당 맵은 경로가 아니라 구독 번호로 받는다. `+map workshop/번호/이름`으로 주면
+        /// 서버가 안 열리고 대기 화면에 선다 — 디렉터가 실제로 겪은 자리다.
+        /// 서버가 없으면 changelevel도 바꿀 게 없어 F10까지 안 먹는다.
+        /// </summary>
+        private static void WorkshopLaunchesByNumber()
         {
-            Report.Head("켤 때 넘기는 값이 workshop/번호/이름 꼴인가");
+            Report.Head("창작마당 맵을 켜고 바꾸는 명령");
 
             GameMap one = WorkshopMaps.Installed().First(m => m.WorkshopFile == "aim_botz");
-            Report.Is("맵 아이디", one.Id, "workshop/3070596071/aim_botz");
             Report.Is("창작마당 맵으로 잡히나", one.IsWorkshop, true);
-            Report.Note("이 값이 +map 과 changelevel 에 그대로 들어간다");
+            Report.Is("켤 때", one.LaunchArgument, "+host_workshop_map 3070596071");
+            Report.Is("바꿀 때", one.ChangeCommand, "host_workshop_map 3070596071");
+            Report.Is("아이디는 되살릴 때 쓰는 값 그대로", one.Id, "workshop/3070596071/aim_botz");
+
+            GameMap builtin = GameData.Modes.First(m => m.Key == "casual").Maps.First(m => m.Id == "de_dust2");
+            Report.Is("기본 맵은 켤 때", builtin.LaunchArgument, "+map de_dust2");
+            Report.Is("기본 맵은 바꿀 때", builtin.ChangeCommand, "changelevel de_dust2");
         }
 
         /// <summary>기본 맵과 섞여 보이면 어느 쪽인지 모른다.</summary>

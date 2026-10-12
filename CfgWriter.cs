@@ -22,12 +22,12 @@ namespace CS2PracticeHost
 
         private static readonly UTF8Encoding NoBom = new UTF8Encoding(false);
 
-        public static void WriteMatchCfgs(GameMode mode, string mapId)
+        public static void WriteMatchCfgs(GameMode mode, GameMap map)
         {
-            // changelevel은 접속한 친구들을 유지한 채 맵만 바꾼다
+            // 접속한 친구들을 유지한 채 맵만 바꾼다. 창작마당은 명령이 달라 맵이 들고 있다
             Write(ChangeCfg, new[]
             {
-                "game_type " + mode.Type, "game_mode " + mode.Mode, "changelevel " + mapId
+                "game_type " + mode.Type, "game_mode " + mode.Mode, map.ChangeCommand
             });
 
             Delete(RetiredHostCfg);

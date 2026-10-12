@@ -318,7 +318,7 @@ namespace CS2PracticeHost
             foreach (ComboBox box in new[] { _bots, _level, _team })
                 box.Enabled = mode.BotsConfigurable;
 
-            CfgWriter.WriteMatchCfgs(mode, map.Id);
+            CfgWriter.WriteMatchCfgs(mode, map);
             CfgWriter.WriteBotCfgs(
                 _bots.SelectedIndex,
                 GameData.BotLevels[_level.SelectedIndex].Value,
@@ -476,7 +476,7 @@ namespace CS2PracticeHost
                    " +exec " + CfgWriter.BindCfg +
                    " +game_type " + mode.Type +
                    " +game_mode " + mode.Mode +
-                   " +map " + map.Id;
+                   " " + map.LaunchArgument;
         }
 
         // ---------- 친구에게 보내기 ----------

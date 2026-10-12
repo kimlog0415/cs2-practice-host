@@ -40,6 +40,20 @@ namespace CS2PracticeHost
 
             Report.Is("바인드 파일이 있나", File.Exists(CfgPath("cs2host_bind")), true);
             Report.Is("맵 바꾸기 파일이 있나", File.Exists(CfgPath("cs2host_change")), true);
+            Report.Is("기본 맵은 changelevel로",
+                      File.ReadAllLines(CfgPath("cs2host_change")).Last(), "changelevel de_dust2");
+
+            // 창작마당 맵을 골랐을 때는 번호로 바꾼다
+            Fake.WorkshopMaps("777/aim_practice");
+            Fake.WorkshopInfoCache("777|Aim Practice|Classic,Map");
+            Fake.WriteSettings("{\"mode\":\"casual\",\"map\":\"workshop/777/aim_practice\",\"bots\":3," +
+                               "\"level\":\"1\",\"team\":\"any\",\"installDir\":null,\"lang\":\"ko\"}");
+            using (new MainForm(Settings.Load())) { }
+            Report.Is("창작마당은 번호로",
+                      File.ReadAllLines(CfgPath("cs2host_change")).Last(), "host_workshop_map 777");
+
+            Fake.ForgetWorkshopInfo();
+            Fake.ClearWorkshopMaps();   // 뒤 확인이 자기 맵만 보게 한다
         }
 
         private static string CfgPath(string name)

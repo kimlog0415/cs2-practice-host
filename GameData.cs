@@ -21,6 +21,21 @@ namespace CS2PracticeHost
 
         public bool IsWorkshop { get { return WorkshopFile != null; } }
 
+        /// <summary>
+        /// 켤 때 붙이는 실행 인자. 창작마당 맵은 경로가 아니라 구독 번호로 받는다 —
+        /// `+map workshop/번호/이름`으로 주면 서버가 안 열리고 대기 화면에 선다.
+        /// </summary>
+        public string LaunchArgument
+        {
+            get { return IsWorkshop ? "+host_workshop_map " + WorkshopId : "+map " + Id; }
+        }
+
+        /// <summary>맵을 바꿀 때 콘솔에 넣는 명령. 들어와 있는 친구는 그대로 남는다.</summary>
+        public string ChangeCommand
+        {
+            get { return IsWorkshop ? "host_workshop_map " + WorkshopId : "changelevel " + Id; }
+        }
+
         public string Name
         {
             get

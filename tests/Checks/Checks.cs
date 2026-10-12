@@ -177,6 +177,17 @@ namespace CS2PracticeHost
             WorkshopInfo.Forget();   // 다음 읽기가 방금 쓴 파일을 보게 한다
         }
 
+        /// <summary>앞 확인이 만든 가짜 구독 폴더를 치운다. 안 치우면 뒤 확인의 개수가 흐트러진다.</summary>
+        public static void ClearWorkshopMaps()
+        {
+            string root = Cs2Paths.WorkshopDir;
+            if (root == null || !Directory.Exists(root)) return;
+            foreach (string dir in Directory.GetDirectories(root))
+            {
+                try { Directory.Delete(dir, true); } catch (Exception) { }
+            }
+        }
+
         public static void ForgetWorkshopInfo()
         {
             try { File.Delete(Path.Combine(
