@@ -41,6 +41,9 @@ namespace CS2PracticeHost
         private bool _launching;
         private DateTime _launchedAt;
 
+        /// <summary>이번 ▶로 CS2가 실제로 떴는지. 떴다가 사라지면 사용자가 끈 것이다.</summary>
+        private bool _sawCs2;
+
         /// <summary>이미 복사해 준 서버. 맵 안에서 F10으로 연 서버도 이걸로 알아챈다.</summary>
         private string _copiedAddress;
 
@@ -376,18 +379,31 @@ namespace CS2PracticeHost
                     return;
             }
 
-            if (_launching && (DateTime.Now - _launchedAt).TotalMinutes > 4)
-            {
-                _launching = false;
-                _launch.Enabled = true;
-                _status.Text = Strings.ServerNotFound;
-            }
+            if (!_launching) return;
+
+            if (status.State != Cs2State.Off) { _sawCs2 = true; return; }
+
+            // 떴던 CS2가 사라졌다 = 서버를 열기 전에 껐다. 바로 풀어 준다 —
+            // 안 풀면 아래 4분이 지날 때까지 아무것도 못 한다
+            if (_sawCs2) { EndLaunch(Strings.Cs2ClosedBeforeServer); return; }
+
+            // 아직 뜨지도 않았다. Steam이 느릴 수 있으니 조금 기다렸다 푼다
+            if ((DateTime.Now - _launchedAt).TotalSeconds > 90) EndLaunch(Strings.ServerNotFound);
+        }
+
+        private void EndLaunch(string why)
+        {
+            _launching = false;
+            _sawCs2 = false;
+            _launch.Enabled = true;
+            _status.Text = why;
         }
 
         /// <summary>처음 보는 서버면 링크를 복사해 알린다. ▶로 열었든 맵 안에서 F10으로 열었든 같다.</summary>
         private void NoticeNewServer(ServerInfo server)
         {
             _launching = false;
+            _sawCs2 = false;
             _launch.Enabled = true;
 
             if (server.Address == _copiedAddress) return;
@@ -448,6 +464,7 @@ namespace CS2PracticeHost
 
             _launchedAt = DateTime.Now;
             _launching = true;
+            _sawCs2 = false;
             _launch.Enabled = false;
             _status.Text = Strings.Launching(mode.Name, map.Name);
         }

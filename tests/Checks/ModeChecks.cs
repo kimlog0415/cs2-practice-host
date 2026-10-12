@@ -16,6 +16,43 @@ namespace CS2PracticeHost
             WingmanAndRushMaps();
             BotsLockedWhereModeDecides();
             SavedByKeyNotName();
+            CfgFilesWritten();
+        }
+
+        /// <summary>
+        /// F10이 안 먹는다는 보고가 있어 실제로 써지는 내용을 찍어 본다.
+        /// 바인드는 cs2host_bind.cfg에, 맵 바꾸기는 cs2host_change.cfg에 들어가고
+        /// 켤 때 +exec cs2host_bind 로 불린다.
+        /// </summary>
+        private static void CfgFilesWritten()
+        {
+            Report.Head("F10 관련 cfg가 어떻게 써지나");
+
+            Fake.Install();
+            Strings.Init("ko");
+            Fake.WriteSettings("{\"mode\":\"casual\",\"map\":\"de_dust2\",\"bots\":3," +
+                               "\"level\":\"1\",\"team\":\"any\",\"installDir\":null,\"lang\":\"ko\"}");
+            using (new MainForm(Settings.Load())) { }
+
+            Dump("cs2host_bind");
+            Dump("cs2host_change");
+            Dump("gamemode_casual_server");
+
+            Report.Is("바인드 파일이 있나", File.Exists(CfgPath("cs2host_bind")), true);
+            Report.Is("맵 바꾸기 파일이 있나", File.Exists(CfgPath("cs2host_change")), true);
+        }
+
+        private static string CfgPath(string name)
+        {
+            return System.IO.Path.Combine(Cs2Paths.CfgDir, name + ".cfg");
+        }
+
+        private static void Dump(string name)
+        {
+            string path = CfgPath(name);
+            if (!File.Exists(path)) { Report.Note(name + ".cfg — 없음"); return; }
+            Report.Note(name + ".cfg:");
+            foreach (string line in File.ReadAllLines(path)) Report.Note("    " + line);
         }
 
         private static void Numbers()

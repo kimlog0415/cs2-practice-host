@@ -145,6 +145,15 @@ namespace CS2PracticeHost
                 "Once the server is up, the join link is copied\nfor you automatically. (takes about a minute)");
         }
 
+        public static string Cs2ClosedBeforeServer
+        {
+            get
+            {
+                return T("CS2가 꺼졌어요.\n다시 ▶ 버튼으로 열어주세요.",
+                         "CS2 was closed.\nUse the ▶ button to open it again.");
+            }
+        }
+
         public static string ServerNotFound
         {
             get

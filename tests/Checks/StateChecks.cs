@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
+using System.Reflection;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
@@ -34,6 +35,7 @@ namespace CS2PracticeHost
             try
             {
                 RetakeLocksBotOptions();
+                LaunchButtonComesBackWhenCs2Closes();
                 BannerOff();
                 BannerNoLog();
                 BannerNoServer();
@@ -71,6 +73,50 @@ namespace CS2PracticeHost
                 Report.Is("되돌렸을 때 봇 수", Peek.Enabled(form, "_bots"), true);
                 Report.Is("되돌렸을 때 난이도", Peek.Enabled(form, "_level"), true);
             }
+        }
+
+        /// <summary>
+        /// ▶를 누르면 두 번 눌리지 않게 버튼을 잠근다. 그런데 다시 켜는 자리가
+        /// 「서버가 열렸을 때」와 「4분 지났을 때」뿐이라, 서버가 열리기 전에 CS2를 끄면
+        /// 4분 동안 아무것도 못 하게 된다. 디렉터가 실제로 겪은 자리다.
+        /// </summary>
+        private static void LaunchButtonComesBackWhenCs2Closes()
+        {
+            Report.Head("CS2를 켰다 끄면 켜기 버튼이 다시 살아나나");
+
+            KillDummies();
+            Settings(mode: "casual");
+            using (var form = new MainForm(global::CS2PracticeHost.Settings.Load()))
+            {
+                // ▶를 누른 직후 상태를 만든다 (실제로 게임을 켜지는 않는다)
+                Pretend(form, launching: true);
+                Report.Is("누른 직후엔 잠겨 있나", Peek.Field<Button>(form, "_launch").Enabled, false);
+
+                Start("-condebug");                 // CS2가 떴다
+                Peek.Refresh(form);
+                Report.Is("뜬 동안엔 잠긴 채인가", Peek.Field<Button>(form, "_launch").Enabled, false);
+
+                KillDummies();                      // 서버를 열기 전에 껐다
+                Peek.Refresh(form);
+                Report.Is("끄면 다시 살아나나", Peek.Field<Button>(form, "_launch").Enabled, true);
+                Report.Note("안내: " + FirstLine(Peek.Field<Label>(form, "_status").Text));
+            }
+        }
+
+        /// <summary>▶를 누른 직후와 같은 상태로 만든다.</summary>
+        private static void Pretend(Form form, bool launching)
+        {
+            typeof(MainForm).GetField("_launching", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(form, launching);
+            typeof(MainForm).GetField("_launchedAt", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(form, DateTime.Now);
+            Peek.Field<Button>(form, "_launch").Enabled = !launching;
+        }
+
+        private static string FirstLine(string s)
+        {
+            string[] lines = s.Split('\n');
+            return lines.Length > 1 ? lines[0].Trim() + " …" : s.Trim();
         }
 
         private static void BannerOff()
