@@ -50,7 +50,7 @@ namespace CS2PracticeHost
                                "\"level\":\"1\",\"team\":\"any\",\"installDir\":null,\"lang\":\"ko\"}");
             using (new MainForm(Settings.Load())) { }
             Report.Is("창작마당은 번호로",
-                      File.ReadAllLines(CfgPath("cs2host_change")).Last(), "host_workshop_map 777");
+                      File.ReadAllLines(CfgPath("cs2host_change")).Last(), "map_workshop 777 aim_practice");
 
             Fake.ForgetWorkshopInfo();
             Fake.ClearWorkshopMaps();   // 뒤 확인이 자기 맵만 보게 한다

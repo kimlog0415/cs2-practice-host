@@ -129,8 +129,8 @@ namespace CS2PracticeHost
 
             GameMap one = WorkshopMaps.Installed().First(m => m.WorkshopFile == "aim_botz");
             Report.Is("창작마당 맵으로 잡히나", one.IsWorkshop, true);
-            Report.Is("켤 때", one.LaunchArgument, "+host_workshop_map 3070596071");
-            Report.Is("바꿀 때", one.ChangeCommand, "host_workshop_map 3070596071");
+            Report.Is("켤 때", one.LaunchArgument, "+map_workshop 3070596071 aim_botz");
+            Report.Is("바꿀 때", one.ChangeCommand, "map_workshop 3070596071 aim_botz");
             Report.Is("아이디는 되살릴 때 쓰는 값 그대로", one.Id, "workshop/3070596071/aim_botz");
 
             GameMap builtin = GameData.Modes.First(m => m.Key == "casual").Maps.First(m => m.Id == "de_dust2");
