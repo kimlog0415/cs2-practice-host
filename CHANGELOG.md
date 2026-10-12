@@ -3,12 +3,20 @@
 ## 1.2.0 (2026-10-13)
 
 - 경쟁·윙맨·러시 모드가 생겼습니다.
-- 받아 두신 창작마당 맵이 맵 목록에 함께 나옵니다.
+- 받아 두신 창작마당 맵이 맵 목록에 함께 나옵니다. 모드에 맞는 맵만 보이고, 제작자가 올린 제목으로 표시됩니다.
+
+알아두실 것
+
+- 창작마당 맵의 제목과 종류는 Steam에 물어서 가져옵니다. 보내는 것은 구독 번호뿐이고, 한 번 받아 오면 적어 두었다가 다시 씁니다. 인터넷이 없으면 파일 이름으로 보이고 캐주얼·경쟁에서 고르실 수 있습니다.
 
 ---
 
 - Added Competitive, Wingman, and Rush.
-- Workshop maps you have downloaded now appear in the map list.
+- Workshop maps you have downloaded now appear in the map list. Only maps that suit the mode are shown, with the title the author published.
+
+Notes
+
+- Map titles and types are fetched from Steam. Only the workshop item id is sent, and the result is stored for reuse. Without internet, maps show by file name and can be picked in Casual and Competitive.
 
 ---
 

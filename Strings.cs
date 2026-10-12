@@ -44,10 +44,15 @@ namespace CS2PracticeHost
 
         public static string BotCountDefault { get { return T("게임 기본값", "Game default"); } }
 
-        /// <summary>받아 둔 창작마당 맵. 기본 맵과 섞이지 않게 앞에 표시를 붙인다.</summary>
-        public static string WorkshopMap(string fileName)
+        /// <summary>
+        /// 받아 둔 창작마당 맵. 기본 맵과 섞이지 않게 앞에 표시를 붙인다.
+        /// 제작자가 붙인 제목은 꽤 길 때가 있어(괄호 설명·이모지까지) 칸을 넘치지 않게 자른다.
+        /// </summary>
+        public static string WorkshopMap(string shown)
         {
-            return T("창작마당 · " + fileName, "Workshop · " + fileName);
+            const int Limit = 34;
+            if (shown != null && shown.Length > Limit) shown = shown.Substring(0, Limit).TrimEnd() + "…";
+            return T("창작마당 · " + shown, "Workshop · " + shown);
         }
 
         public static string BotCount(int n)

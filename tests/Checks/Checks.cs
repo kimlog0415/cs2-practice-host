@@ -148,6 +148,44 @@ namespace CS2PracticeHost
             }
         }
 
+        /// <summary>
+        /// Steam에 묻지 않고 제목·태그를 미리 적어 둔다. 확인기가 바깥 요청을 내지 않게 하려는 것이다.
+        /// 형식은 "번호|제목|태그,태그".
+        /// </summary>
+        public static void WorkshopInfoCache(params string[] rows)
+        {
+            var items = new List<WorkshopItem>();
+            foreach (string row in rows)
+            {
+                string[] parts = row.Split('|');
+                items.Add(new WorkshopItem
+                {
+                    Id = parts[0],
+                    Title = parts[1],
+                    Tags = parts.Length > 2 && parts[2].Length > 0 ? parts[2].Split(',') : new string[0],
+                });
+            }
+
+            string path = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "CS2PracticeHost", "workshop.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            using (var stream = File.Create(path))
+                new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(WorkshopCache))
+                    .WriteObject(stream, new WorkshopCache { Items = items.ToArray() });
+
+            WorkshopInfo.Forget();   // 다음 읽기가 방금 쓴 파일을 보게 한다
+        }
+
+        public static void ForgetWorkshopInfo()
+        {
+            try { File.Delete(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "CS2PracticeHost", "workshop.json")); }
+            catch (Exception) { }
+            WorkshopInfo.Forget();
+        }
+
         public static void Clean()
         {
             try { Directory.Delete(Path.Combine(Path.GetTempPath(), Root), true); }

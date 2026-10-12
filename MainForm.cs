@@ -59,7 +59,7 @@ namespace CS2PracticeHost
             SaveAll();
 
             _watch.Tick += (s, e) => RefreshStatus();
-            Shown += (s, e) => { RefreshStatus(); _watch.Start(); ShowUpdateIfAny(); };
+            Shown += (s, e) => { RefreshStatus(); _watch.Start(); ShowUpdateIfAny(); LookUpWorkshopIfAny(); };
         }
 
         // ---------- 화면 ----------
@@ -221,10 +221,10 @@ namespace CS2PracticeHost
         /// <summary>설치된 맵만 보여준다. 모드를 바꿔도 같은 맵이 있으면 유지한다.</summary>
         private void FillMaps(string wantedId)
         {
-            // 받아 둔 창작마당 맵은 모드와 상관없이 뒤에 붙인다. 어느 모드로 열지는 방장이 고른다
+            // 받아 둔 창작마당 맵은 제작자가 단 태그로 걸러 그 모드에 맞는 것만 붙인다
             _maps = SelectedMode.Maps
                 .Where(m => File.Exists(Path.Combine(Cs2Paths.MapsDir, m.Id + ".vpk")))
-                .Concat(WorkshopMaps.Installed())
+                .Concat(WorkshopMaps.For(SelectedMode))
                 .ToArray();
 
             _map.Items.Clear();
@@ -533,6 +533,26 @@ namespace CS2PracticeHost
         private static string SiteUrl
         {
             get { return "https://cs2.logstone.net/" + (Strings.En ? "?lang=en" : ""); }
+        }
+
+        /// <summary>
+        /// 받아 둔 창작마당 맵의 제목·태그를 Steam에 물어본다. 적어 둔 것이 있으면 안 나간다.
+        /// 받아 오기 전에는 파일 이름으로 보이고 Classic 자리에 있다가, 받아 오면 그 자리에서 바뀐다.
+        /// </summary>
+        private async void LookUpWorkshopIfAny()
+        {
+            string[] ids = WorkshopMaps.InstalledIds();
+            if (ids.Length == 0) return;
+
+            bool gained = await Task.Run(() => WorkshopInfo.FetchMissing(ids));
+            if (!gained || IsDisposed) return;
+
+            GameMap keep = SelectedMap;
+            bool wasLoading = _loading;
+            _loading = true;
+            FillMaps(keep != null ? keep.Id : null);
+            _loading = wasLoading;
+            SaveAll();
         }
 
         /// <summary>확인은 네트워크를 타므로 화면이 멈추지 않게 뒤에서 돌린다.</summary>

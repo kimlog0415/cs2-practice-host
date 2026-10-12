@@ -14,13 +14,23 @@ namespace CS2PracticeHost
         /// <summary>창작마당 맵이면 그 vpk 파일 이름. 기본 맵은 null.</summary>
         public string WorkshopFile;
 
+        /// <summary>창작마당 맵이면 구독 번호. 이걸로 제목·태그를 찾는다.</summary>
+        public string WorkshopId;
+
         public GameMap(string id, string ko, string en) { Id = id; Ko = ko; En = en; }
 
         public bool IsWorkshop { get { return WorkshopFile != null; } }
 
         public string Name
         {
-            get { return IsWorkshop ? Strings.WorkshopMap(WorkshopFile) : (Strings.En ? En : Ko); }
+            get
+            {
+                if (!IsWorkshop) return Strings.En ? En : Ko;
+
+                WorkshopItem known = WorkshopInfo.Of(WorkshopId);
+                string shown = known != null && !string.IsNullOrEmpty(known.Title) ? known.Title : WorkshopFile;
+                return Strings.WorkshopMap(shown);
+            }
         }
 
         /// <summary>
@@ -29,7 +39,11 @@ namespace CS2PracticeHost
         /// </summary>
         public static GameMap Workshop(string id, string fileName)
         {
-            return new GameMap("workshop/" + id + "/" + fileName, null, null) { WorkshopFile = fileName };
+            return new GameMap("workshop/" + id + "/" + fileName, null, null)
+            {
+                WorkshopFile = fileName,
+                WorkshopId = id,
+            };
         }
     }
 
@@ -44,6 +58,12 @@ namespace CS2PracticeHost
         /// <summary>맵 로딩 때 CS2가 읽는 gamemode_&lt;Cfg&gt;_server.cfg. 탈환은 봇을 모드 규칙이 정해서 없다.</summary>
         public string Cfg;
         public GameMap[] Maps;
+
+        /// <summary>
+        /// 이 모드에 붙일 창작마당 맵의 태그(제작자가 단 것). null이면 창작마당 맵을 안 받는다 —
+        /// 러시는 방과 타워가 박힌 전용 맵이 필요하고, 탈환도 전용 배치를 전제한다.
+        /// </summary>
+        public string WorkshopTag;
 
         public string Name { get { return Strings.En ? En : Ko; } }
         public bool BotsConfigurable { get { return Cfg != null; } }
@@ -115,12 +135,12 @@ namespace CS2PracticeHost
 
         public static readonly GameMode[] Modes =
         {
-            new GameMode { Key = "casual",      Ko = "캐주얼",      En = "Casual",      Type = 0, Mode = 0, Cfg = "casual",         Maps = ClassicMaps },
-            new GameMode { Key = "competitive", Ko = "경쟁",        En = "Competitive", Type = 0, Mode = 1, Cfg = "competitive",    Maps = ClassicMaps },
-            new GameMode { Key = "wingman",     Ko = "윙맨",        En = "Wingman",     Type = 0, Mode = 2, Cfg = "competitive2v2", Maps = WingmanMaps },
+            new GameMode { Key = "casual",      Ko = "캐주얼",      En = "Casual",      Type = 0, Mode = 0, Cfg = "casual",         Maps = ClassicMaps, WorkshopTag = "Classic" },
+            new GameMode { Key = "competitive", Ko = "경쟁",        En = "Competitive", Type = 0, Mode = 1, Cfg = "competitive",    Maps = ClassicMaps, WorkshopTag = "Classic" },
+            new GameMode { Key = "wingman",     Ko = "윙맨",        En = "Wingman",     Type = 0, Mode = 2, Cfg = "competitive2v2", Maps = WingmanMaps, WorkshopTag = "Wingman" },
             new GameMode { Key = "rush",        Ko = "러시",        En = "Rush",        Type = 0, Mode = 6, Cfg = null,             Maps = RushMaps },
-            new GameMode { Key = "deathmatch",  Ko = "데스매치",    En = "Deathmatch",  Type = 1, Mode = 2, Cfg = "deathmatch",     Maps = ClassicMaps },
-            new GameMode { Key = "armsrace",    Ko = "무기 레이스", En = "Arms Race",   Type = 1, Mode = 0, Cfg = "armsrace",       Maps = ArmsMaps },
+            new GameMode { Key = "deathmatch",  Ko = "데스매치",    En = "Deathmatch",  Type = 1, Mode = 2, Cfg = "deathmatch",     Maps = ClassicMaps, WorkshopTag = "Deathmatch" },
+            new GameMode { Key = "armsrace",    Ko = "무기 레이스", En = "Arms Race",   Type = 1, Mode = 0, Cfg = "armsrace",       Maps = ArmsMaps, WorkshopTag = "Armsrace" },
             new GameMode { Key = "retake",      Ko = "탈환",        En = "Retakes",     Type = 0, Mode = 5, Cfg = null,             Maps = RetakeMaps },
         };
 
