@@ -84,6 +84,27 @@ namespace CS2PracticeHost
 
         private static readonly GameMap[] RetakeMaps = ClassicMaps.Take(10).ToArray();
 
+        /// <summary>
+        /// 윙맨(2대2) 전용 맵. 밸브 맵 넷은 폭탄 자리를 하나로 줄인 판이라 파일은 기본 맵과 같고,
+        /// 셋(Debris·El Dorado·Poseidon)은 윙맨에만 있다. 디렉터가 게임 화면에서 읽어 준 목록이다.
+        /// </summary>
+        private static readonly GameMap[] WingmanMaps =
+        {
+            new GameMap("de_debris", "잔해", "Debris"),
+            new GameMap("de_eldorado", "엘도라도", "El Dorado"),
+            new GameMap("de_poseidon", "포세이돈", "Poseidon"),
+            new GameMap("de_overpass", "오버패스", "Overpass"),
+            new GameMap("de_vertigo", "버티고", "Vertigo"),
+            new GameMap("de_nuke", "뉴크", "Nuke"),
+            new GameMap("de_inferno", "인페르노", "Inferno"),
+        };
+
+        /// <summary>러시(3대3)는 맵이 하나다. 그 안에 방 열아홉이 들어 있다.</summary>
+        private static readonly GameMap[] RushMaps =
+        {
+            new GameMap("rush_001", "컴플렉스", "Complex"),
+        };
+
         private static readonly GameMap[] ArmsMaps =
         {
             new GameMap("ar_baggage", "수하물", "Baggage"),
@@ -94,14 +115,24 @@ namespace CS2PracticeHost
 
         public static readonly GameMode[] Modes =
         {
-            new GameMode { Key = "casual",     Ko = "캐주얼",      En = "Casual",     Type = 0, Mode = 0, Cfg = "casual",     Maps = ClassicMaps },
-            new GameMode { Key = "deathmatch", Ko = "데스매치",    En = "Deathmatch", Type = 1, Mode = 2, Cfg = "deathmatch", Maps = ClassicMaps },
-            new GameMode { Key = "armsrace",   Ko = "무기 레이스", En = "Arms Race",  Type = 1, Mode = 0, Cfg = "armsrace",   Maps = ArmsMaps },
-            new GameMode { Key = "retake",     Ko = "탈환",        En = "Retakes",    Type = 0, Mode = 5, Cfg = null,         Maps = RetakeMaps },
+            new GameMode { Key = "casual",      Ko = "캐주얼",      En = "Casual",      Type = 0, Mode = 0, Cfg = "casual",         Maps = ClassicMaps },
+            new GameMode { Key = "competitive", Ko = "경쟁",        En = "Competitive", Type = 0, Mode = 1, Cfg = "competitive",    Maps = ClassicMaps },
+            new GameMode { Key = "wingman",     Ko = "윙맨",        En = "Wingman",     Type = 0, Mode = 2, Cfg = "competitive2v2", Maps = WingmanMaps },
+            new GameMode { Key = "rush",        Ko = "러시",        En = "Rush",        Type = 0, Mode = 6, Cfg = null,             Maps = RushMaps },
+            new GameMode { Key = "deathmatch",  Ko = "데스매치",    En = "Deathmatch",  Type = 1, Mode = 2, Cfg = "deathmatch",     Maps = ClassicMaps },
+            new GameMode { Key = "armsrace",    Ko = "무기 레이스", En = "Arms Race",   Type = 1, Mode = 0, Cfg = "armsrace",       Maps = ArmsMaps },
+            new GameMode { Key = "retake",      Ko = "탈환",        En = "Retakes",     Type = 0, Mode = 5, Cfg = null,             Maps = RetakeMaps },
         };
 
-        /// <summary>competitive는 예전 버전이 만들어 둔 파일을 정리하려고 남겨 둔다.</summary>
-        public static readonly string[] ServerCfgs = { "casual", "deathmatch", "armsrace", "competitive" };
+        /// <summary>
+        /// 봇 설정을 넣을 gamemode_*_server.cfg 들. 고를 수 있는 모드마다 하나씩이고,
+        /// 지금 안 쓰는 것도 남겨 둬야 옛 버전이 만든 파일이 지워진다.
+        /// 윙맨은 파일 이름이 모드 이름과 달라서 competitive2v2 다.
+        /// </summary>
+        public static readonly string[] ServerCfgs =
+        {
+            "casual", "competitive", "competitive2v2", "deathmatch", "armsrace",
+        };
 
         public static readonly Choice<int>[] BotLevels =
         {

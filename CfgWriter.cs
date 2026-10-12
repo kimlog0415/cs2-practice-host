@@ -69,7 +69,7 @@ namespace CS2PracticeHost
                 string file = "gamemode_" + name + "_server";
                 if (!IsOursOrMissing(file)) continue;   // 사용자가 직접 만든 파일은 건드리지 않는다
 
-                if (lines != null && name != "competitive") Write(file, lines);
+                if (lines != null) Write(file, lines);
                 else Delete(file);
             }
         }

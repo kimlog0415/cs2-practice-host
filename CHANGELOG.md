@@ -1,5 +1,17 @@
 # 변경 내역 / Changelog
 
+## 1.2.0 (2026-10-13)
+
+- 경쟁·윙맨·러시 모드가 생겼습니다.
+- 받아 두신 창작마당 맵이 맵 목록에 함께 나옵니다.
+
+---
+
+- Added Competitive, Wingman, and Rush.
+- Workshop maps you have downloaded now appear in the map list.
+
+---
+
 ## 1.1.2 (2026-10-04)
 
 - 새 버전 알림을 누르면 받는 버튼이 하나인 페이지가 열립니다.

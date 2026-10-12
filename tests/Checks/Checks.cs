@@ -21,7 +21,7 @@ namespace CS2PracticeHost
             Application.EnableVisualStyles();
 
             string mode = args.Length > 0 ? args[0] : "all";
-            Console.WriteLine("확인 대상: " + (mode == "all" ? "lang, maps, state, update" : mode));
+            Console.WriteLine("확인 대상: " + (mode == "all" ? "lang, modes, maps, state, update" : mode));
             Console.WriteLine("이 확인기 버전: " + Assembly.GetExecutingAssembly().GetName().Version);
             Console.WriteLine();
 
@@ -29,6 +29,7 @@ namespace CS2PracticeHost
             try
             {
                 if (mode == "all" || mode == "lang") LangChecks.Run();
+                if (mode == "all" || mode == "modes") ModeChecks.Run();
                 if (mode == "all" || mode == "maps") MapChecks.Run();
                 if (mode == "all" || mode == "state") StateChecks.Run(args.Skip(1).FirstOrDefault());
                 if (mode == "all" || mode == "update") UpdateChecks.Run();

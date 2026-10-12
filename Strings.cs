@@ -99,6 +99,15 @@ namespace CS2PracticeHost
                 "* The server closes if the host returns to the menu");
         }
 
+        /// <summary>모드가 봇을 직접 정해 설정이 안 먹는 경우의 안내.</summary>
+        public static string ModeBotsNote(string modeKey)
+        {
+            if (modeKey == "rush")
+                return T("\n※ 러시는 봇을 게임이 정해요 (3대3, 빈자리를 채워요)",
+                         "\n* Rush picks its own bots (3v3, it fills the empty slots)");
+            return RetakeBotsNote;
+        }
+
         public static string RetakeBotsNote
         {
             get
