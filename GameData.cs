@@ -6,35 +6,34 @@ namespace CS2PracticeHost
 {
     internal sealed class GameMap
     {
-        /// <summary>`+map`·`changelevel`에 그대로 넘기는 값. 창작마당은 `workshop/번호/이름` 꼴이다.</summary>
+        /// <summary>`+map`·`changelevel`에 그대로 넘기는 값. 창작마당은 `workshop/번호` 꼴이다.</summary>
         public string Id;
         public string Ko;
         public string En;
 
-        /// <summary>창작마당 맵이면 그 vpk 파일 이름. 기본 맵은 null.</summary>
-        public string WorkshopFile;
-
-        /// <summary>창작마당 맵이면 구독 번호. 이걸로 제목·태그를 찾는다.</summary>
+        /// <summary>창작마당 맵이면 구독 번호. 기본 맵은 null. 이걸로 제목·태그를 찾는다.</summary>
         public string WorkshopId;
 
         public GameMap(string id, string ko, string en) { Id = id; Ko = ko; En = en; }
 
-        public bool IsWorkshop { get { return WorkshopFile != null; } }
+        public bool IsWorkshop { get { return WorkshopId != null; } }
 
         /// <summary>
-        /// 켤 때 붙이는 실행 인자. 창작마당 맵은 `map_workshop 번호 이름` 이다 —
+        /// 켤 때 붙이는 실행 인자. 창작마당 맵은 `map_workshop 번호` 다 —
         /// 「내 게임으로 여는」 쪽 명령이고, 전용 서버용(`host_workshop_map`)이나
         /// 경로 꼴(`map workshop/번호/이름`)로 주면 서버가 안 열려 대기 화면에 선다.
+        /// 맵 이름은 붙이지 않는다 — vpk가 번호로 저장돼서(`3447707473_dir.vpk`) 이름을 알 길이 없고,
+        /// 번호 폴더에 맵이 하나뿐이라 게임이 번호만으로 찾는다.
         /// </summary>
         public string LaunchArgument
         {
-            get { return IsWorkshop ? "+map_workshop " + WorkshopId + " " + WorkshopFile : "+map " + Id; }
+            get { return IsWorkshop ? "+map_workshop " + WorkshopId : "+map " + Id; }
         }
 
         /// <summary>맵을 바꿀 때 콘솔에 넣는 명령. 들어와 있는 친구는 그대로 남는다.</summary>
         public string ChangeCommand
         {
-            get { return IsWorkshop ? "map_workshop " + WorkshopId + " " + WorkshopFile : "changelevel " + Id; }
+            get { return IsWorkshop ? "map_workshop " + WorkshopId : "changelevel " + Id; }
         }
 
         public string Name
@@ -44,22 +43,18 @@ namespace CS2PracticeHost
                 if (!IsWorkshop) return Strings.En ? En : Ko;
 
                 WorkshopItem known = WorkshopInfo.Of(WorkshopId);
-                string shown = known != null && !string.IsNullOrEmpty(known.Title) ? known.Title : WorkshopFile;
+                string shown = known != null && !string.IsNullOrEmpty(known.Title) ? known.Title : WorkshopId;
                 return Strings.WorkshopMap(shown);
             }
         }
 
         /// <summary>
-        /// 받아 둔 창작마당 맵. 제목은 Steam에 물어봐야 알 수 있어서 파일 이름을 그대로 보여 준다
-        /// — 받은 사람은 그걸로 자기 맵을 알아본다.
+        /// 받아 둔 창작마당 맵. 제목은 Steam에 물어봐야 알 수 있어서, 못 물어봤으면 번호를 보여 준다
+        /// — 받은 사람은 창작마당에서 그 번호로 자기 맵을 찾을 수 있다.
         /// </summary>
-        public static GameMap Workshop(string id, string fileName)
+        public static GameMap Workshop(string id)
         {
-            return new GameMap("workshop/" + id + "/" + fileName, null, null)
-            {
-                WorkshopFile = fileName,
-                WorkshopId = id,
-            };
+            return new GameMap("workshop/" + id, null, null) { WorkshopId = id };
         }
     }
 

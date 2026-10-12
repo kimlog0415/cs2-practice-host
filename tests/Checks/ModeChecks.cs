@@ -44,13 +44,13 @@ namespace CS2PracticeHost
                       File.ReadAllLines(CfgPath("cs2host_change")).Last(), "changelevel de_dust2");
 
             // 창작마당 맵을 골랐을 때는 번호로 바꾼다
-            Fake.WorkshopMaps("777/aim_practice");
+            Fake.WorkshopMaps("777");
             Fake.WorkshopInfoCache("777|Aim Practice|Classic,Map");
-            Fake.WriteSettings("{\"mode\":\"casual\",\"map\":\"workshop/777/aim_practice\",\"bots\":3," +
+            Fake.WriteSettings("{\"mode\":\"casual\",\"map\":\"workshop/777\",\"bots\":3," +
                                "\"level\":\"1\",\"team\":\"any\",\"installDir\":null,\"lang\":\"ko\"}");
             using (new MainForm(Settings.Load())) { }
             Report.Is("창작마당은 번호로",
-                      File.ReadAllLines(CfgPath("cs2host_change")).Last(), "map_workshop 777 aim_practice");
+                      File.ReadAllLines(CfgPath("cs2host_change")).Last(), "map_workshop 777");
 
             Fake.ForgetWorkshopInfo();
             Fake.ClearWorkshopMaps();   // 뒤 확인이 자기 맵만 보게 한다

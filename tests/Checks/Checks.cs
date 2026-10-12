@@ -134,17 +134,29 @@ namespace CS2PracticeHost
             return root;
         }
 
-        /// <summary>받아 둔 창작마당 맵 흉내. 폴더 이름이 구독 번호, 그 안에 vpk가 있으면 받은 것이다.</summary>
-        public static void WorkshopMaps(params string[] idSlashFile)
+        /// <summary>
+        /// 받아 둔 창작마당 맵 흉내. 폴더 이름이 구독 번호고 그 안의 vpk도 번호로 저장된다 —
+        /// 실제 폴더가 `3447707473/3447707473_dir.vpk` 꼴이라 맵 이름은 아무 데도 없다.
+        /// `번호:3`처럼 뒤에 수를 붙이면 쪼개진 맵(`_dir` + `_000`·`_001`)을 만든다.
+        /// </summary>
+        public static void WorkshopMaps(params string[] ids)
         {
             string root = Cs2Paths.WorkshopDir;
             if (root == null) throw new Exception("창작마당 폴더를 못 찾았다 — 설치 폴더가 먼저 잡혀야 한다");
-            foreach (string pair in idSlashFile)
+            foreach (string spec in ids)
             {
-                string[] parts = pair.Split('/');
-                string dir = Path.Combine(root, parts[0]);
+                string[] parts = spec.Split(':');
+                string id = parts[0];
+                int chunks = parts.Length > 1 ? int.Parse(parts[1]) : 0;
+
+                string dir = Path.Combine(root, id);
                 Directory.CreateDirectory(dir);
-                File.WriteAllText(Path.Combine(dir, parts[1] + ".vpk"), "");
+
+                if (chunks == 0) { File.WriteAllText(Path.Combine(dir, id + ".vpk"), ""); continue; }
+
+                File.WriteAllText(Path.Combine(dir, id + "_dir.vpk"), "");
+                for (int i = 0; i < chunks; i++)
+                    File.WriteAllText(Path.Combine(dir, id + "_" + i.ToString("000") + ".vpk"), "");
             }
         }
 
