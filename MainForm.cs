@@ -62,7 +62,7 @@ namespace CS2PracticeHost
             SaveAll();
 
             _watch.Tick += (s, e) => RefreshStatus();
-            Shown += (s, e) => { RefreshStatus(); _watch.Start(); ShowUpdateIfAny(); LookUpWorkshopIfAny(); };
+            Shown += (s, e) => { RefreshStatus(); _watch.Start(); ShowUpdateIfAny(); };
         }
 
         // ---------- 화면 ----------
@@ -224,10 +224,11 @@ namespace CS2PracticeHost
         /// <summary>설치된 맵만 보여준다. 모드를 바꿔도 같은 맵이 있으면 유지한다.</summary>
         private void FillMaps(string wantedId)
         {
-            // 받아 둔 창작마당 맵은 제작자가 단 태그로 걸러 그 모드에 맞는 것만 붙인다
+            // 창작마당 맵은 아직 안 붙인다 — 받아 둔 맵을 찾는 것까지는 되는데
+            // CS2가 콘솔로 그 맵을 여는 것을 받아 주지 않아 대기 화면에 선다.
+            // 찾는 쪽(WorkshopMaps)은 그대로 두고 목록에 붙이는 자리만 뺐다.
             _maps = SelectedMode.Maps
                 .Where(m => File.Exists(Path.Combine(Cs2Paths.MapsDir, m.Id + ".vpk")))
-                .Concat(WorkshopMaps.For(SelectedMode))
                 .ToArray();
 
             _map.Items.Clear();
@@ -556,6 +557,7 @@ namespace CS2PracticeHost
         /// 받아 둔 창작마당 맵의 제목·태그를 Steam에 물어본다. 적어 둔 것이 있으면 안 나간다.
         /// 받아 오기 전에는 파일 이름으로 보이고 Classic 자리에 있다가, 받아 오면 그 자리에서 바뀐다.
         /// </summary>
+        /// <summary>창작마당 맵을 목록에 안 붙이는 동안은 아무도 안 부른다 — 제목을 물어볼 데가 없다.</summary>
         private async void LookUpWorkshopIfAny()
         {
             string[] ids = WorkshopMaps.InstalledIds();

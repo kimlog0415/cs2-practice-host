@@ -43,17 +43,8 @@ namespace CS2PracticeHost
             Report.Is("기본 맵은 changelevel로",
                       File.ReadAllLines(CfgPath("cs2host_change")).Last(), "changelevel de_dust2");
 
-            // 창작마당 맵을 골랐을 때는 번호로 바꾼다
-            Fake.WorkshopMaps("777");
-            Fake.WorkshopInfoCache("777|Aim Practice|Classic,Map");
-            Fake.WriteSettings("{\"mode\":\"casual\",\"map\":\"workshop/777\",\"bots\":3," +
-                               "\"level\":\"1\",\"team\":\"any\",\"installDir\":null,\"lang\":\"ko\"}");
-            using (new MainForm(Settings.Load())) { }
-            Report.Is("창작마당은 번호로",
-                      File.ReadAllLines(CfgPath("cs2host_change")).Last(), "map_workshop 777");
-
-            Fake.ForgetWorkshopInfo();
-            Fake.ClearWorkshopMaps();   // 뒤 확인이 자기 맵만 보게 한다
+            // 창작마당 맵을 골랐을 때 무엇이 써지는지는 목록에 다시 붙인 뒤에 본다
+            // (지금은 고를 수가 없다 — MapChecks가 명령 꼴만 확인한다)
         }
 
         private static string CfgPath(string name)

@@ -19,7 +19,8 @@ namespace CS2PracticeHost
             SplitVpkCountsOnce();
             FoundInList();
             WorkshopLaunchesByNumber();
-            NotMixedWithBuiltIn();
+            NotOfferedWhileParked();
+            StaleWorkshopPickFallsBack();
             LanguageTogglesThePrefix();
             SortedByModeTag();
             TitleShownWhenKnown();
@@ -147,13 +148,17 @@ namespace CS2PracticeHost
             Report.Is("기본 맵은 바꿀 때", builtin.ChangeCommand, "changelevel de_dust2");
         }
 
-        /// <summary>기본 맵과 섞여 보이면 어느 쪽인지 모른다.</summary>
-        private static void NotMixedWithBuiltIn()
+        /// <summary>
+        /// 1.2.0은 창작마당 맵을 목록에 안 붙인다 — 받아 둔 맵을 찾는 것까지는 되는데
+        /// CS2가 콘솔로 그 맵을 여는 것을 받아 주지 않아 대기 화면에 선다.
+        /// 고를 수 있는데 안 열리는 게 제일 나쁘니 목록에서 뺀 채로 내보낸다.
+        /// </summary>
+        private static void NotOfferedWhileParked()
         {
-            Report.Head("기본 맵과 구분되나");
+            Report.Head("창작마당 맵이 목록에 안 뜨나 (아직 막아 둔 상태)");
 
             Strings.Init("ko");
-            Report.Is("보이는 이름", ById("3070596071").Name, "창작마당 · 3070596071");
+            Report.Is("찾기는 되나", WorkshopMaps.Installed().Length, 4);
 
             Fake.WriteSettings("{\"mode\":\"casual\",\"map\":\"de_dust2\",\"bots\":0," +
                                "\"level\":\"1\",\"team\":\"any\",\"installDir\":null,\"lang\":\"ko\"}");
@@ -161,8 +166,22 @@ namespace CS2PracticeHost
             {
                 var box = Peek.Field<System.Windows.Forms.ComboBox>(form, "_map");
                 Report.Is("기본 맵이 그대로 있나", box.Items.Contains("더스트2"), true);
-                Report.Is("창작마당 맵이 붙었나", box.Items.Contains("창작마당 · 3070596071"), true);
+                Report.Is("창작마당 맵이 안 붙었나", box.Items.Contains("창작마당 · 3070596071"), false);
                 Report.Note("맵 칸 항목 수: " + box.Items.Count);
+            }
+        }
+
+        /// <summary>앞 판에서 창작마당 맵을 골라 둔 설정이 남아 있어도 빈 칸이 되면 안 된다.</summary>
+        private static void StaleWorkshopPickFallsBack()
+        {
+            Report.Head("설정에 남은 창작마당 맵은 어떻게 되나");
+
+            Strings.Init("ko");
+            Fake.WriteSettings("{\"mode\":\"casual\",\"map\":\"workshop/3070596071\",\"bots\":0," +
+                               "\"level\":\"1\",\"team\":\"any\",\"installDir\":null,\"lang\":\"ko\"}");
+            using (var form = new MainForm(Settings.Load()))
+            {
+                Report.Is("고른 맵", Peek.Combo(form, "_map"), "더스트2");
             }
         }
 
