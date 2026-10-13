@@ -113,6 +113,19 @@ namespace CS2PracticeHost
             return RetakeBotsNote;
         }
 
+        /// <summary>
+        /// 창작마당 맵은 F10으로 못 간다 — 넘어가는 건 방장뿐이고 친구는 튕기거나, 게임이 명령을 막는다.
+        /// 창작마당 맵이 떠 있는 동안은 기본 맵으로 돌아가는 F10도 막힌다.
+        /// </summary>
+        public static string WorkshopNoF10Note
+        {
+            get
+            {
+                return T("\n※ 창작마당 맵은 F10으로 못 바꿔요 — ▶로 새로 열고 친구에게 링크를 다시 보내세요",
+                         "\n* Workshop maps can't be switched with F10 — open with ▶ and send the new link again");
+            }
+        }
+
         public static string RetakeBotsNote
         {
             get

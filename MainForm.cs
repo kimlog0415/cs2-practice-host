@@ -335,6 +335,7 @@ namespace CS2PracticeHost
             if (_launching) return;   // 서버 여는 중에는 진행 상황 문구를 유지한다
 
             string note = mode.BotsConfigurable ? OneSidedBotNote() : Strings.ModeBotsNote(mode.Key);
+            if (map.IsWorkshop) note += Strings.WorkshopNoF10Note;
             _status.Text = Strings.Saved(mode.Name, map.Name, note);
         }
 

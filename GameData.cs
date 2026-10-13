@@ -36,18 +36,15 @@ namespace CS2PracticeHost
         }
 
         /// <summary>
-        /// 맵을 바꿀 때 콘솔에 넣는 명령. 들어와 있는 친구가 그대로 남아야 한다.
-        /// 창작마당 맵도 `map_workshop`이 아니라 `changelevel`이다 — `map_workshop`은 서버를 새로 열어
-        /// 방장만 넘어가고 친구는 튕긴다(실기). 게임이 창작마당 맵을 열 때 안에서 만드는 명령이
-        /// `map <이름> customgamemode=<번호>`이고(server.dll), changelevel도 같은 옵션을 받는다.
+        /// F10으로 맵을 바꿀 때 콘솔에 넣는 명령. 들어와 있는 친구가 그대로 남는다.
+        /// 창작마당 맵은 null — F10으로 갈 길이 없다(실기). `map_workshop`은 서버를 새로 열어
+        /// 방장만 넘어가고 친구가 튕기고, `changelevel`은 창작마당 맵이 떠 있는 동안 게임이
+        /// cfg에서 실행하는 것을 막는다(`DISALLOWED WORKSHOP COMMANDS: changelevel`).
+        /// 그래서 창작마당 맵은 ▶로 새로 열고 링크를 다시 보낸다.
         /// </summary>
         public string ChangeCommand
         {
-            get
-            {
-                return IsWorkshop ? "changelevel " + WorkshopMapName + " customgamemode=" + WorkshopId
-                                  : "changelevel " + Id;
-            }
+            get { return IsWorkshop ? null : "changelevel " + Id; }
         }
 
         public string Name
