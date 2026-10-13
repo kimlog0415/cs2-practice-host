@@ -124,7 +124,7 @@ namespace CS2PracticeHost
             GameMap one = ById("3070596071");
             Report.Is("창작마당 맵으로 잡히나", one.IsWorkshop, true);
             Report.Is("켤 때", one.LaunchArgument, "+map_workshop 3070596071 aim_botz");
-            Report.Is("바꿀 때", one.ChangeCommand, "map_workshop 3070596071 aim_botz");
+            Report.Is("바꿀 때", one.ChangeCommand, "changelevel aim_botz customgamemode=3070596071");
             Report.Is("아이디는 되살릴 때 쓰는 값", one.Id, "workshop/3070596071/aim_botz");
 
             GameMap builtin = GameData.Modes.First(m => m.Key == "casual").Maps.First(m => m.Id == "de_dust2");
@@ -151,7 +151,7 @@ namespace CS2PracticeHost
             }
 
             string change = System.IO.Path.Combine(Cs2Paths.CfgDir, "cs2host_change.cfg");
-            Report.Is("F10 파일", System.IO.File.ReadAllLines(change).Last(), "map_workshop 3070596071 aim_botz");
+            Report.Is("F10 파일", System.IO.File.ReadAllLines(change).Last(), "changelevel aim_botz customgamemode=3070596071");
         }
 
         /// <summary>1.2.0 전 판은 `workshop/번호`로 적었다. 그 설정이 남아 있어도 빈 칸이 되면 안 된다.</summary>
