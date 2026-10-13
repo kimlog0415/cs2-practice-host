@@ -12,9 +12,10 @@ namespace CS2PracticeHost
     internal static class WorkshopMaps
     {
         /// <summary>
-        /// 번호 폴더 하나가 맵 하나다. Steam이 vpk를 맵 이름이 아니라 구독 번호로 저장하고
-        /// (`3447707473_dir.vpk`, 큰 맵은 `_000`·`_001`로 쪼개진다) 맵 이름은 파일 어디에도 안 남는다.
-        /// 그래서 파일 이름은 안 본다 — 폴더에 vpk가 하나라도 있으면 그 번호를 맵으로 센다.
+        /// Steam은 vpk를 구독 번호로 저장한다(`3447707473_dir.vpk`, 큰 맵은 `_000`·`_001`로 쪼개진다).
+        /// 맵 이름은 파일 이름이 아니라 vpk 목차 안에 있다 — `maps/de_dust2_n.vpk` 꼴로.
+        /// `map_workshop`은 그 이름까지 받아야 맵을 연다(번호만 주거나 번호를 이름 자리에 넣으면
+        /// 「필요한 맵이 클라이언트에 없습니다」). 구독 하나에 맵이 둘 든 것도 있어 맵마다 하나씩 센다.
         /// </summary>
         public static GameMap[] Installed()
         {
@@ -32,13 +33,109 @@ namespace CS2PracticeHost
                     long ignored;
                     if (!long.TryParse(id, out ignored)) continue;
 
-                    if (Directory.GetFiles(dir, "*.vpk").Length > 0) found.Add(GameMap.Workshop(id));
+                    // 이름을 못 읽은 맵은 띄우지 않는다 — 고를 수 있는데 안 열리는 게 제일 나쁘다
+                    string[] names = PlayableOf(MapNamesIn(TreeFile(dir, id)), SourceFolder(dir));
+                    foreach (string name in names)
+                        found.Add(GameMap.Workshop(id, name, names.Length > 1));
                 }
             }
             catch (IOException) { return new GameMap[0]; }
             catch (UnauthorizedAccessException) { return new GameMap[0]; }
 
             return found.OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+        }
+
+        /// <summary>
+        /// `maps/` 바로 아래 vpk가 다 고를 맵은 아니다. 하늘 상자(`de_bikinibottom_skybox`)나
+        /// 본 맵이 끌어다 쓰는 작은 맵(Shortdust의 `dust1`)도 같은 자리에 있다. 그걸 고르면 빈 하늘에 선다.
+        /// `_skybox`는 이름으로 빼고, 그래도 여럿이면 제작자가 올린 폴더 이름과 맞는 쪽만 남긴다
+        /// (`shortdust` → `de_shortdust`). 맞는 게 없으면 진짜 맵이 여럿 든 묶음으로 보고 다 둔다.
+        /// </summary>
+        internal static string[] PlayableOf(string[] names, string sourceFolder)
+        {
+            string[] maps = names.Where(n => !n.EndsWith("_skybox", StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (maps.Length <= 1 || string.IsNullOrEmpty(sourceFolder)) return maps;
+
+            string[] main = maps.Where(n => string.Equals(n, sourceFolder, StringComparison.OrdinalIgnoreCase) ||
+                                            n.EndsWith("_" + sourceFolder, StringComparison.OrdinalIgnoreCase))
+                                .ToArray();
+            return main.Length > 0 ? main : maps;
+        }
+
+        /// <summary>Steam이 받은 폴더에 같이 두는 `publish_data.txt`의 `source_folder` — 제작자의 작업 폴더 이름이다.</summary>
+        private static string SourceFolder(string dir)
+        {
+            try
+            {
+                foreach (string line in File.ReadLines(Path.Combine(dir, "publish_data.txt")))
+                {
+                    string[] parts = line.Split('"');   // 	"source_folder"		"shortdust"
+                    if (parts.Length >= 4 && parts[1] == "source_folder") return parts[3];
+                }
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+            return null;
+        }
+
+        /// <summary>목차가 든 파일. 쪼개진 맵은 `_dir`에만 목차가 있고, 안 쪼개진 맵은 번호 그대로다.</summary>
+        private static string TreeFile(string dir, string id)
+        {
+            string split = Path.Combine(dir, id + "_dir.vpk");
+            return File.Exists(split) ? split : Path.Combine(dir, id + ".vpk");
+        }
+
+        private const uint VpkSignature = 0x55AA1234;
+
+        /// <summary>
+        /// vpk 목차에서 `maps` 바로 아래의 `.vpk` 이름들. 그게 게임이 여는 맵이다.
+        /// `maps/maps/prefabs/...`의 하늘 상자 같은 것은 바로 아래가 아니라 안 걸린다.
+        /// </summary>
+        internal static string[] MapNamesIn(string vpk)
+        {
+            var names = new List<string>();
+            try
+            {
+                using (var r = new BinaryReader(File.OpenRead(vpk)))
+                {
+                    if (r.ReadUInt32() != VpkSignature) return new string[0];
+                    uint version = r.ReadUInt32();
+                    r.ReadUInt32();                         // 목차 크기
+                    if (version == 2) r.ReadBytes(16);      // v2는 머리에 크기 넷이 더 있다
+                    else if (version != 1) return new string[0];
+
+                    // 목차는 확장자 → 경로 → 파일 이름 세 겹이고 각 겹이 빈 문자열로 끝난다
+                    string ext;
+                    while ((ext = ReadText(r)).Length > 0)
+                    {
+                        string path;
+                        while ((path = ReadText(r)).Length > 0)
+                        {
+                            string file;
+                            while ((file = ReadText(r)).Length > 0)
+                            {
+                                r.ReadBytes(4);                     // CRC
+                                ushort preload = r.ReadUInt16();
+                                r.ReadBytes(12);                    // 조각 번호·위치·길이·끝 표시
+                                r.ReadBytes(preload);
+                                if (ext == "vpk" && path == "maps") names.Add(file);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (IOException) { return new string[0]; }      // 없는 파일, 중간에 끊긴 파일(EndOfStream)
+            catch (UnauthorizedAccessException) { return new string[0]; }
+
+            return names.ToArray();
+        }
+
+        private static string ReadText(BinaryReader r)
+        {
+            var bytes = new List<byte>();
+            byte b;
+            while ((b = r.ReadByte()) != 0) bytes.Add(b);
+            return System.Text.Encoding.UTF8.GetString(bytes.ToArray());
         }
 
         /// <summary>

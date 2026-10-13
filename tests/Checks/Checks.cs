@@ -136,28 +136,88 @@ namespace CS2PracticeHost
 
         /// <summary>
         /// 받아 둔 창작마당 맵 흉내. 폴더 이름이 구독 번호고 그 안의 vpk도 번호로 저장된다 —
-        /// 실제 폴더가 `3447707473/3447707473_dir.vpk` 꼴이라 맵 이름은 아무 데도 없다.
-        /// `번호:3`처럼 뒤에 수를 붙이면 쪼개진 맵(`_dir` + `_000`·`_001`)을 만든다.
+        /// 실제 폴더가 `3447707473/3447707473_dir.vpk` 꼴이고 맵 이름은 vpk 목차 안에만 있다.
+        /// 형식은 `번호=맵,맵:조각수`. 맵을 안 적으면 `ws_번호` 하나, `번호=`처럼 비우면 빈 파일(못 읽는 vpk).
+        /// 조각수를 붙이면 쪼개진 맵(`_dir` + `_000`·`_001`)을 만든다.
         /// </summary>
-        public static void WorkshopMaps(params string[] ids)
+        public static void WorkshopMaps(params string[] specs)
         {
             string root = Cs2Paths.WorkshopDir;
             if (root == null) throw new Exception("창작마당 폴더를 못 찾았다 — 설치 폴더가 먼저 잡혀야 한다");
-            foreach (string spec in ids)
+            foreach (string spec in specs)
             {
                 string[] parts = spec.Split(':');
-                string id = parts[0];
                 int chunks = parts.Length > 1 ? int.Parse(parts[1]) : 0;
+                string[] named = parts[0].Split('=');
+                string id = named[0];
+                string[] maps = named.Length == 1 ? new[] { "ws_" + id }
+                              : named[1].Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
                 string dir = Path.Combine(root, id);
                 Directory.CreateDirectory(dir);
 
-                if (chunks == 0) { File.WriteAllText(Path.Combine(dir, id + ".vpk"), ""); continue; }
+                string tree = Path.Combine(dir, id + (chunks == 0 ? ".vpk" : "_dir.vpk"));
+                if (maps.Length == 0) File.WriteAllText(tree, "");
+                else File.WriteAllBytes(tree, VpkTree(maps));
 
-                File.WriteAllText(Path.Combine(dir, id + "_dir.vpk"), "");
                 for (int i = 0; i < chunks; i++)
                     File.WriteAllText(Path.Combine(dir, id + "_" + i.ToString("000") + ".vpk"), "");
             }
+        }
+
+        /// <summary>Steam이 받은 폴더에 같이 두는 파일. 제작자의 작업 폴더 이름이 들어 있다.</summary>
+        public static void PublishData(string id, string sourceFolder)
+        {
+            string dir = Path.Combine(Cs2Paths.WorkshopDir, id);
+            Directory.CreateDirectory(dir);
+            File.WriteAllText(Path.Combine(dir, "publish_data.txt"),
+                "\"publish_data\"\n{\n\t\"title\"\t\t\"" + id + "\"\n\t\"source_folder\"\t\t\"" + sourceFolder + "\"\n}\n");
+        }
+
+        /// <summary>
+        /// 실제 창작마당 vpk와 같은 꼴의 목차(v2). 맵 옆에 하늘 상자(`maps/maps/prefabs/...`)와
+        /// 재질 파일도 넣는다 — 실제 vpk에 늘 있고, 맵으로 세면 안 되는 것들이다.
+        /// </summary>
+        private static byte[] VpkTree(string[] maps)
+        {
+            var tree = new MemoryStream();
+            var w = new BinaryWriter(tree);
+            Action<string> text = s => { w.Write(System.Text.Encoding.UTF8.GetBytes(s)); w.Write((byte)0); };
+            Action entry = () =>
+            {
+                w.Write(0u);                // CRC
+                w.Write((ushort)2);         // 미리 실은 바이트 수 — 건너뛰는지 보려고 0이 아니게
+                w.Write((ushort)0x7FFF);    // 조각 번호
+                w.Write(0u); w.Write(0u);   // 위치·길이
+                w.Write((ushort)0xFFFF);    // 끝 표시
+                w.Write((ushort)0xABCD);    // 미리 실은 바이트
+            };
+
+            text("vpk");
+            text("maps");
+            foreach (string m in maps) { text(m); entry(); }
+            text("");
+            text("maps/maps/prefabs/" + maps[0]);
+            text(maps[0] + "_skybox"); entry();
+            text("");
+            text("");
+            text("vmat_c");
+            text("maps/" + maps[0] + "/_vrf");
+            text("wood"); entry();
+            text("");
+            text("");
+            text("");
+            w.Flush();
+
+            var file = new MemoryStream();
+            var h = new BinaryWriter(file);
+            h.Write(0x55AA1234u);
+            h.Write(2u);
+            h.Write((uint)tree.Length);
+            h.Write(new byte[16]);
+            h.Write(tree.ToArray());
+            h.Flush();
+            return file.ToArray();
         }
 
         /// <summary>

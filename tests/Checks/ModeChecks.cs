@@ -43,8 +43,7 @@ namespace CS2PracticeHost
             Report.Is("기본 맵은 changelevel로",
                       File.ReadAllLines(CfgPath("cs2host_change")).Last(), "changelevel de_dust2");
 
-            // 창작마당 맵을 골랐을 때 무엇이 써지는지는 목록에 다시 붙인 뒤에 본다
-            // (지금은 고를 수가 없다 — MapChecks가 명령 꼴만 확인한다)
+            // 창작마당 맵을 골랐을 때 무엇이 써지는지는 MapChecks가 본다
         }
 
         private static string CfgPath(string name)
