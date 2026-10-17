@@ -3,10 +3,12 @@
 ## 1.3.0 (2026-10-17)
 
 - 받아 두신 창작마당 맵을 고를 수 있고, F10으로도 바꿀 수 있습니다.
+- 새 판 알림이 창을 덮어 뜹니다.
 
 ---
 
 - You can pick the workshop maps you have downloaded, and switch to them with F10.
+- The new-version notice now covers the window.
 
 ---
 
