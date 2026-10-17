@@ -1,0 +1,2 @@
+# 훅은 sh가 읽는다. CRLF로 받으면 #!/bin/sh 줄이 깨져 훅이 조용히 안 돈다
+.githooks/* text eol=lf

@@ -1,0 +1,58 @@
+#!/bin/sh
+# 공개 저장소라 개인정보가 커밋에 섞이면 되돌릴 수 없다(push하면 남이 이미 받았을 수 있다).
+# 새로 들어가는 줄만 본다. 걸리면 커밋을 막고 어느 줄인지 보여 준다.
+#
+# 켜기 (PC마다 한 번):  git config core.hooksPath .githooks
+#
+# 이름·hostname·닉네임처럼 그 사람만의 낱말은 이 파일에 적을 수 없다(이 파일도 공개다).
+# 그런 건 .git/info/private-words 에 한 줄에 하나씩 적는다 — .git 안이라 push되지 않는다.
+
+# 이 폴더는 뺀다 — 금지 낱말을 적어 둔 곳이라 스스로를 막는다
+added=$(git diff --cached -U0 --no-color -- . ':!.githooks' | grep -E '^\+' | grep -vE '^\+\+\+ ')
+[ -z "$added" ] && exit 0
+
+fail=0
+check() {   # $1 = 설명, $2 = 정규식(대소문자 무시), $3 = 이 파일에서만 볼 때
+    if [ -n "$3" ]; then
+        lines=$(git diff --cached -U0 --no-color -- "$3" | grep -E '^\+' | grep -vE '^\+\+\+ ')
+    else
+        lines="$added"
+    fi
+    hit=$(printf '%s\n' "$lines" | grep -inE -- "$2")
+    if [ -n "$hit" ]; then
+        echo "✖ $1"
+        printf '%s\n' "$hit" | sed 's/^/    /'
+        fail=1
+    fi
+}
+
+check "개인 폴더 경로"          '[a-z]:[\\/]+users[\\/]+[^\\/<>]+|/c/users/[^/<>]+|%userprofile%'
+check "Steam 계정 번호"         '\[U:1:[0-9]+\]|STEAM_[0-5]:[01]:[0-9]+|7656119[0-9]{10}'
+check "이메일 주소"             '[a-z0-9._%+-]+@(gmail|naver|daum|hanmail|kakao|outlook|hotmail|icloud)\.'
+check "전화번호"                '01[016789]-?[0-9]{3,4}-?[0-9]{4}'
+check "가족 서술 (「게임용 PC」로)" '남편|아내|와이프|신랑|husband|wife'
+check "컴퓨터 이름"             'DESKTOP-[A-Z0-9]{5,}|LAPTOP-[A-Z0-9]{5,}'
+
+# 인박스는 대화 칸이라 실제로 연 방의 주소가 들어오기 쉽다 — 주소를 아는 누구나 들어온다
+check "인박스에 서버 주소·참가 링크" '\[A:1:[0-9]+:[0-9]+\]|A:1:[0-9]{6,}|/j/\?a=|\+connect' GAMEPC-INBOX.md
+
+private="$(git rev-parse --git-dir)/info/private-words"
+if [ -f "$private" ]; then
+    # 한 줄씩 셸로 읽으면 한글 낱말이 깨진다 — grep이 파일째 읽게 한다
+    words=$(grep -vE '^[[:space:]]*(#|$)' "$private" | tr -d '\r')
+    if [ -n "$words" ]; then
+        hit=$(printf '%s\n' "$added" | LC_ALL=C.UTF-8 grep -inF -- "$words")
+        if [ -n "$hit" ]; then
+            echo "✖ 개인 낱말 (private-words)"
+            printf '%s\n' "$hit" | sed 's/^/    /'
+            fail=1
+        fi
+    fi
+fi
+
+if [ "$fail" -ne 0 ]; then
+    echo
+    echo "공개 저장소에 들어가면 안 되는 것이 있어 커밋을 막았다. 지우거나 바꾼 뒤 다시 커밋한다."
+    exit 1
+fi
+exit 0
