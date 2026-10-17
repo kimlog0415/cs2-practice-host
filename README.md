@@ -54,6 +54,8 @@ CS2는 반드시 이 앱의 ▶ 버튼으로 켜 주세요. Steam에서 직접 �
 - **F10 키를 다시 지정합니다.** 기존에 F10을 쓰고 계셨다면 덮어씌워집니다.
 - Steam을 실행 인자와 함께 실행합니다(`-applaunch 730 -condebug +exec ... +map ...`).
 - CS2가 남기는 `console.log`를 읽어 서버 주소를 찾습니다.
+- 받아 두신 창작마당 맵을 맵 목록에 띄우려고 Steam 창작마당 폴더(`steamapps\workshop\content\730`)를 읽습니다. 맵 이름은 그 안의 vpk 목차에서 읽습니다.
+- 창작마당 맵의 제목과 종류(어느 모드용인지)를 Steam에 물어봅니다. 보내는 것은 맵의 구독 번호뿐이고(원래 공개된 값입니다), 받아 온 것은 `%APPDATA%\CS2PracticeHost\workshop.json`에 적어 두고 다시 씁니다. 인터넷이 없으면 맵 이름으로 보입니다.
 - 실행 중인 cs2.exe가 이 앱으로 켠 것인지 확인합니다.
 - 서버 주소를 클립보드에 복사합니다. 다른 프로그램이 클립보드를 잡고 있으면 복사하지 못했다고 알려 줍니다.
 - 설정을 `%APPDATA%\CS2PracticeHost\settings.json`에 저장합니다.
@@ -65,7 +67,7 @@ CS2는 반드시 이 앱의 ▶ 버튼으로 켜 주세요. Steam에서 직접 �
 - 게임 메모리를 읽거나 쓰지 않습니다.
 - 키 입력이나 마우스를 조작하지 않습니다.
 - 게임 파일을 고치지 않습니다.
-- 어떤 정보도 보내지 않습니다. 바깥과 닿는 것은 둘뿐입니다 — 켤 때 최신 버전 번호를 물어보는 것, 그리고 버튼으로 브라우저를 여는 것. 둘 다 넘기는 정보가 없습니다.
+- 개인 정보를 보내지 않습니다. 바깥과 닿는 것은 셋뿐입니다 — 켤 때 최신 버전 번호를 물어보는 것, 창작마당 맵의 제목을 물어보는 것(구독 번호만 보냅니다), 그리고 버튼으로 브라우저를 여는 것.
 - 알아서 받거나 설치하지 않습니다. 새 버전이 있다고 알려 줄 뿐입니다.
 
 공식 콘솔 명령, cfg 파일, 실행 인자, 로그 읽기만 사용합니다.
@@ -106,9 +108,9 @@ There is also a [video walkthrough](https://youtu.be/fWGAAhCcZOo) in Korean cove
 
 **Notes** — if the host leaves to the main menu the server closes. Bots piled on one team cap at "humans + 2" due to a team size rule. Bot settings apply when a map is loaded. Anyone with the address can join, so share it privately.
 
-**What it does** — reads the Steam install path from the registry, writes config files into the CS2 cfg folder (marked as its own; never touches files it did not create), rebinds F10, launches Steam with arguments, reads `console.log` for the server address, copies that address to the clipboard (and says so when another program blocks it), stores settings in `%APPDATA%`, opens the [usage page](https://cs2.logstone.net/) in your browser from the `?` button, and asks GitHub for the latest version number at startup.
+**What it does** — reads the Steam install path from the registry, writes config files into the CS2 cfg folder (marked as its own; never touches files it did not create), rebinds F10, launches Steam with arguments, reads `console.log` for the server address, copies that address to the clipboard (and says so when another program blocks it), stores settings in `%APPDATA%`, opens the [usage page](https://cs2.logstone.net/) in your browser from the `?` button, and asks GitHub for the latest version number at startup. To list your downloaded workshop maps it reads the Steam workshop folder (map names come from the vpk directory), and asks Steam for each map's title and tags — only the public workshop item id is sent, and the answer is cached in `%APPDATA%\CS2PracticeHost\workshop.json`.
 
-**What it does not do** — no game memory access, no input simulation, no game file modification, no automatic download or install. It sends nothing: the version check and the browser button both pass no information along.
+**What it does not do** — no game memory access, no input simulation, no game file modification, no automatic download or install. It sends no personal information: the version check, the workshop title lookup (item ids only) and the browser button are the only outside contacts.
 
 Build with `dotnet build -c Release`. Targets .NET Framework 4.8 with no NuGet dependencies, so the output is a single exe.
 
