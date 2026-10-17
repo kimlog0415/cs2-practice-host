@@ -36,15 +36,20 @@ namespace CS2PracticeHost
         }
 
         /// <summary>
-        /// F10으로 맵을 바꿀 때 콘솔에 넣는 명령. 들어와 있는 친구가 그대로 남는다.
-        /// 창작마당 맵은 null — F10으로 갈 길이 없다(실기). `map_workshop`은 서버를 새로 열어
-        /// 방장만 넘어가고 친구가 튕기고, `changelevel`은 창작마당 맵이 떠 있는 동안 게임이
-        /// cfg에서 실행하는 것을 막는다(`DISALLOWED WORKSHOP COMMANDS: changelevel`).
-        /// 그래서 창작마당 맵은 ▶로 새로 열고 링크를 다시 보낸다.
+        /// F10으로 맵을 바꿀 때 콘솔에 넣는 명령. 서버를 새로 열지 않아 주소가 그대로다.
+        /// 창작마당 맵은 게임이 창작마당 맵을 열 때 안에서 쓰는 꼴(server.dll의
+        /// `customgamemode=… nomapvalidation=true`)을 changelevel에 붙인다. 실기에서 갈린 것 —
+        /// `map_workshop`은 서버를 새로 열어 친구가 튕기고, `nomapvalidation` 없이 주면
+        /// 창작마당 맵 위에서는 `DISALLOWED WORKSHOP COMMANDS`, 기본 맵 위에서는 `invalid map name`.
         /// </summary>
         public string ChangeCommand
         {
-            get { return IsWorkshop ? null : "changelevel " + Id; }
+            get
+            {
+                return IsWorkshop
+                    ? "changelevel " + WorkshopMapName + " customgamemode=" + WorkshopId + " nomapvalidation=true"
+                    : "changelevel " + Id;
+            }
         }
 
         public string Name

@@ -24,10 +24,8 @@ namespace CS2PracticeHost
 
         public static void WriteMatchCfgs(GameMode mode, GameMap map)
         {
-            // 접속한 친구들을 유지한 채 맵만 바꾼다. 창작마당 맵은 F10으로 갈 길이 없어
-            // 모드만 바뀌고 맵은 그대로인 일이 없게 아무것도 안 넣는다 — 앱 화면이 ▶로 새로 열라고 안내한다
-            if (map.ChangeCommand == null) Write(ChangeCfg, new string[0]);
-            else Write(ChangeCfg, new[]
+            // 접속한 친구들을 유지한 채 맵만 바꾼다. 창작마당은 명령이 달라 맵이 들고 있다
+            Write(ChangeCfg, new[]
             {
                 "game_type " + mode.Type, "game_mode " + mode.Mode, map.ChangeCommand
             });

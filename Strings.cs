@@ -114,15 +114,16 @@ namespace CS2PracticeHost
         }
 
         /// <summary>
-        /// 창작마당 맵은 F10으로 못 간다 — 넘어가는 건 방장뿐이고 친구는 튕기거나, 게임이 명령을 막는다.
-        /// 창작마당 맵이 떠 있는 동안은 기본 맵으로 돌아가는 F10도 막힌다.
+        /// 창작마당 맵도 F10으로 간다. 그 맵이 있는 친구는 로딩 한 번으로 따라오지만, 없는 친구는
+        /// 받겠냐는 창에서 받기를 누르면 서버를 떠나 받고 저절로 다시 붙지 않는다(실기).
+        /// 주소는 그대로라 같은 링크로 다시 들어오면 된다.
         /// </summary>
-        public static string WorkshopNoF10Note
+        public static string WorkshopF10Note
         {
             get
             {
-                return T("\n※ 창작마당 맵은 F10으로 못 바꿔요 — ▶로 새로 열고 친구에게 링크를 다시 보내세요",
-                         "\n* Workshop maps can't be switched with F10 — open with ▶ and send the new link again");
+                return T("\n※ 창작마당 맵이 없는 친구는 받느라 한 번 나가요 — 다 받은 뒤 같은 링크로 다시 들어오면 돼요",
+                         "\n* Friends without this workshop map leave once to download it — then rejoin with the same link");
             }
         }
 
