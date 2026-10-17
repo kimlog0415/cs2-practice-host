@@ -36,6 +36,7 @@ namespace CS2PracticeHost
             FoundInList();
             WorkshopLaunchesWithMapName();
             OfferedInList();
+            NewDownloadShowsOnDropDown();
             StaleWorkshopPickFallsBack();
             LanguageTogglesThePrefix();
             SortedByModeTag();
@@ -155,6 +156,43 @@ namespace CS2PracticeHost
             string change = System.IO.Path.Combine(Cs2Paths.CfgDir, "cs2host_change.cfg");
             Report.Is("F10 파일", System.IO.File.ReadAllLines(change).Last(l => l.Length > 0),
                       "changelevel aim_botz customgamemode=3070596071 nomapvalidation=true");
+        }
+
+        /// <summary>
+        /// 앱을 켜 둔 채 Steam에서 새로 구독한 맵. 맵 칸을 펼치면 바로 보여야 한다 —
+        /// 전에는 모드를 바꾸거나 앱을 다시 켜야 보였다. 고르던 맵은 그대로 남아야 한다.
+        /// </summary>
+        private static void NewDownloadShowsOnDropDown()
+        {
+            Report.Head("앱을 켠 채 새로 받은 맵이 펼칠 때 뜨나");
+
+            // 제목을 미리 적어 둔다 — 새 맵을 보면 Steam에 묻는데, 확인기는 바깥 요청을 내지 않는다
+            Fake.WorkshopInfoCache("3070596071|Aim Botz|Classic", "1234567890|Night Cache|Classic",
+                                   "999|Yprac Mirage|Classic", "555|Big Wingman Map|Wingman",
+                                   "777|Shortdust|Classic", "666|Bikini Bottom|Classic",
+                                   "444|Aim Pack|Classic", "4242|Fresh Map|Classic");
+            Strings.Init("ko");
+            Fake.WriteSettings("{\"mode\":\"casual\",\"map\":\"de_dust2\",\"bots\":0," +
+                               "\"level\":\"1\",\"team\":\"any\",\"installDir\":null,\"lang\":\"ko\"}");
+            using (var form = new MainForm(Settings.Load()))
+            {
+                var box = Peek.Field<System.Windows.Forms.ComboBox>(form, "_map");
+                int before = box.Items.Count;
+                Report.Is("받기 전엔 없나", box.Items.Contains("창작마당 · Fresh Map"), false);
+
+                Fake.WorkshopMaps("4242=de_fresh");
+                typeof(MainForm).GetMethod("OnMapDropDown",
+                        System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                    .Invoke(form, new object[] { box, System.EventArgs.Empty });
+
+                Report.Is("펼치니 뜨나", box.Items.Contains("창작마당 · Fresh Map"), true);
+                Report.Is("한 개 늘었나", box.Items.Count, before + 1);
+                Report.Is("고르던 맵이 남나", Peek.Combo(form, "_map"), "더스트2");
+            }
+
+            // 뒤 확인들이 맵 수를 센다 — 이 맵은 치운다
+            System.IO.Directory.Delete(System.IO.Path.Combine(Cs2Paths.WorkshopDir, "4242"), true);
+            Fake.ForgetWorkshopInfo();
         }
 
         /// <summary>1.2.0 전 판은 `workshop/번호`로 적었다. 그 설정이 남아 있어도 빈 칸이 되면 안 된다.</summary>

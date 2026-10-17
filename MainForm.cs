@@ -178,8 +178,31 @@ namespace CS2PracticeHost
             FillChoices();
 
             _mode.SelectedIndexChanged += OnModeChanged;
+            _map.DropDown += OnMapDropDown;
             foreach (ComboBox box in new[] { _map, _bots, _level, _team })
                 box.SelectedIndexChanged += (s, e) => SaveAll();
+        }
+
+        /// <summary>
+        /// 앱을 켜 둔 채 Steam에서 새로 구독한 창작마당 맵이 바로 보이게, 맵 칸을 펼칠 때 폴더를 다시 본다.
+        /// 달라진 게 없으면 손대지 않는다 — 펼칠 때마다 목록이 깜빡이지 않게.
+        /// </summary>
+        private void OnMapDropDown(object sender, EventArgs e)
+        {
+            if (_mode.SelectedIndex < 0) return;
+
+            string[] now = WorkshopMaps.For(SelectedMode).Select(m => m.Id).ToArray();
+            string[] shown = _maps.Where(m => m.IsWorkshop).Select(m => m.Id).ToArray();
+            if (now.SequenceEqual(shown)) return;
+
+            GameMap keep = SelectedMap;
+            bool wasLoading = _loading;
+            _loading = true;
+            FillMaps(keep != null ? keep.Id : null);
+            _loading = wasLoading;
+            SaveAll();
+
+            LookUpWorkshopIfAny();   // 새로 받은 맵의 제목·태그 — 모르는 번호만 묻는다
         }
 
         /// <summary>맵을 뺀 나머지 목록. 언어를 바꾸면 보이는 이름이 달라지므로 다시 채운다.</summary>
