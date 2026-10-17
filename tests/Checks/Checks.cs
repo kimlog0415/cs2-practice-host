@@ -372,6 +372,17 @@ namespace CS2PracticeHost
                 .Invoke(target, new object[] { EventArgs.Empty });
         }
 
+        /// <summary>
+        /// 링크는 Click이 아니라 LinkClicked로 걸려 있어 OnClick을 올려도 아무 일도 안 한다.
+        /// 올릴 것을 잘못 고르면 「눌렀는데 통과」가 되므로 링크는 이 쪽으로 누른다.
+        /// </summary>
+        public static void ClickLink(LinkLabel link)
+        {
+            Report.Note("[「" + link.Text + "」 링크 누름]");
+            typeof(LinkLabel).GetMethod("OnLinkClicked", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(link, new object[] { new LinkLabelLinkClickedEventArgs(new LinkLabel.Link()) });
+        }
+
         public static void Refresh(Form form)
         {
             typeof(MainForm).GetMethod("RefreshStatus", BindingFlags.Instance | BindingFlags.NonPublic)

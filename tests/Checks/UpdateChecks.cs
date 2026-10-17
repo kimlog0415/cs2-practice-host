@@ -37,9 +37,9 @@ namespace CS2PracticeHost
             }
 
             Strings.Init("ko");
-            Report.Note("한국어 알림: " + Strings.UpdateFound(newer));
+            Report.Note("한국어 알림: " + Strings.UpdateTitle + " / " + Strings.UpdateGet);
             Strings.Init("en");
-            Report.Note("영어 알림  : " + Strings.UpdateFound(newer));
+            Report.Note("영어 알림  : " + Strings.UpdateTitle + " / " + Strings.UpdateGet);
 
             ShowsInWindow(newer);
         }
@@ -76,18 +76,32 @@ namespace CS2PracticeHost
 
         private static void Look(Form form, string newer)
         {
-            LinkLabel line = Peek.Field<LinkLabel>(form, "_update");
+            Panel overlay = Peek.Field<Panel>(form, "_update");
+            Label versions = Peek.Field<Label>(form, "_updateVersions");
+            Button get = Peek.Field<Button>(form, "_updateGet");
+            LinkLabel later = Peek.Field<LinkLabel>(form, "_updateLater");
             string kept = (string)typeof(MainForm)
                 .GetField("_newerVersion", BindingFlags.Instance | BindingFlags.NonPublic)
                 .GetValue(form);
+            string mine = (string)typeof(MainForm)
+                .GetProperty("MyVersion", BindingFlags.Static | BindingFlags.NonPublic)
+                .GetValue(null, null);
 
-            Report.Is("알림줄이 보이나", line.Visible, true);
-            Report.Is("알림줄 글", line.Text, Strings.UpdateFound(newer));
+            Report.Is("덮는 판이 보이나", overlay.Visible, true);
             Report.Is("기억한 새 버전", kept, newer);
+            Report.Is("두 판을 나란히 보여 주나", versions.Text, Strings.UpdateVersions(mine, newer));
+            Report.Is("제목", Peek.Field<Label>(form, "_updateTitle").Text, Strings.UpdateTitle);
+            Report.Is("받는 버튼", get.Text, Strings.UpdateGet);
+            Report.Note("받는 법 안내: " + Strings.UpdateHow.Replace('\n', ' '));
 
-            int bottom = line.Location.Y + line.Size.Height;
-            Report.Is("창 안에 들어오나 (알림줄 아래끝 " + bottom + " / 창 높이 " + form.ClientSize.Height + ")",
-                      bottom <= form.ClientSize.Height, true);
+            // 창을 덮어야 놓치지 않는다 — 한 줄로 두니 지나갔던 자리다(2026-10-04)
+            Report.Is("창 전체를 덮나", overlay.Size == form.ClientSize, true);
+            Report.Is("맨 위에 있나", form.Controls.GetChildIndex(overlay), 0);
+
+            // ⚠️ 못 닫게 하면 버전 확인이 실패했을 때 멀쩡한 도구가 안 열린다
+            Report.Is("닫는 길이 있나", later.Text, Strings.UpdateLater);
+            Peek.ClickLink(later);
+            Report.Is("닫으면 사라지나", overlay.Visible, false);
 
             // 누르면 어디로 가나 — 받을 것이 넷인 배포 페이지면 안 된다 (1.1.2에서 고친 자리)
             string site = (string)typeof(MainForm)

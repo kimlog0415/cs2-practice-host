@@ -27,7 +27,12 @@ namespace CS2PracticeHost
         private readonly Button _launch = new Button();
         private readonly Button _copyLink = new Button();
         private readonly Button _copyAddress = new Button();
-        private readonly LinkLabel _update = new LinkLabel();
+        private readonly Panel _update = new Panel();
+        private readonly Label _updateTitle = new Label();
+        private readonly Label _updateVersions = new Label();
+        private readonly Label _updateHow = new Label();
+        private readonly Button _updateGet = new Button();
+        private readonly LinkLabel _updateLater = new LinkLabel();
         private readonly ToolTip _tips = new ToolTip();
         private readonly Timer _watch = new Timer { Interval = 2000 };
 
@@ -131,15 +136,59 @@ namespace CS2PracticeHost
             _copyAddress.Click += OnCopyAddressClick;
             Controls.Add(_copyAddress);
 
-            // 새 버전이 있을 때만 보인다. 그때 창이 그만큼 늘어난다
-            _update.Location = new Point(20, 604);
-            _update.Size = new Size(384, 22);
-            _update.TextAlign = ContentAlignment.MiddleCenter;
-            _update.Visible = false;
-            _update.LinkClicked += (s, e) => OpenInBrowser(SiteUrl);
-            Controls.Add(_update);
+            BuildUpdateOverlay();
 
             SetStaticText();
+        }
+
+        /// <summary>
+        /// 새 판 알림. 띠 아래 한 줄로 두니 놓치고 지나가서 창을 덮는 판으로 바꿨다(2026-10-17 디렉터 지시).
+        /// 닫을 수는 있게 둔다 — 버전 확인은 GitHub에 묻는 일이라 실패할 수 있고,
+        /// 못 닫게 하면 그때 멀쩡한 도구가 안 열린다. 닫아도 다음에 열면 또 뜬다.
+        /// </summary>
+        private void BuildUpdateOverlay()
+        {
+            _update.Location = new Point(0, 0);
+            _update.Size = ClientSize;
+            _update.BackColor = Color.White;
+            _update.Visible = false;
+
+            SetUpdateFonts();
+
+            _updateTitle.Location = new Point(20, 180);
+            _updateTitle.Size = new Size(384, 40);
+            _updateTitle.TextAlign = ContentAlignment.MiddleCenter;
+            _update.Controls.Add(_updateTitle);
+
+            _updateVersions.Location = new Point(20, 228);
+            _updateVersions.Size = new Size(384, 30);
+            _updateVersions.TextAlign = ContentAlignment.MiddleCenter;
+            _update.Controls.Add(_updateVersions);
+
+            _updateHow.Location = new Point(20, 282);
+            _updateHow.Size = new Size(384, 56);
+            _updateHow.TextAlign = ContentAlignment.MiddleCenter;
+            _update.Controls.Add(_updateHow);
+
+            _updateGet.Location = new Point(92, 360);
+            _updateGet.Size = new Size(240, 44);
+            _updateGet.Click += (s, e) => OpenInBrowser(SiteUrl);
+            _update.Controls.Add(_updateGet);
+
+            _updateLater.Location = new Point(92, 416);
+            _updateLater.Size = new Size(240, 22);
+            _updateLater.TextAlign = ContentAlignment.MiddleCenter;
+            _updateLater.LinkClicked += (s, e) => _update.Visible = false;
+            _update.Controls.Add(_updateLater);
+
+            Controls.Add(_update);
+        }
+
+        private void SetUpdateFonts()
+        {
+            _updateTitle.Font = new Font(Strings.UiFont, 15, FontStyle.Bold);
+            _updateVersions.Font = new Font(Strings.UiFont, 12, FontStyle.Bold);
+            _updateGet.Font = new Font(Strings.UiFont, 11, FontStyle.Bold);
         }
 
         private void AddRow(ComboBox box, ref int y)
@@ -170,7 +219,12 @@ namespace CS2PracticeHost
             _tips.SetToolTip(_lang, Strings.LangToggleTip);
             _tips.SetToolTip(_help, Strings.HelpTip);
 
-            if (_newerVersion != null) _update.Text = Strings.UpdateFound(_newerVersion);
+            _updateTitle.Text = Strings.UpdateTitle;
+            _updateHow.Text = Strings.UpdateHow;
+            _updateGet.Text = Strings.UpdateGet;
+            _updateLater.Text = Strings.UpdateLater;
+            if (_newerVersion != null)
+                _updateVersions.Text = Strings.UpdateVersions(MyVersion, _newerVersion);
         }
 
         private void FillControls()
@@ -310,6 +364,7 @@ namespace CS2PracticeHost
             _lang.Font = new Font(Strings.UiFont, 9, FontStyle.Bold);
             _help.Font = new Font(Strings.UiFont, 11, FontStyle.Bold);
             _launch.Font = new Font(Strings.UiFont, 11, FontStyle.Bold);
+            SetUpdateFonts();
 
             SetStaticText();
             FillChoices();
@@ -603,9 +658,14 @@ namespace CS2PracticeHost
             if (newer == null || IsDisposed) return;
 
             _newerVersion = newer;
-            _update.Text = Strings.UpdateFound(newer);
+            _updateVersions.Text = Strings.UpdateVersions(MyVersion, newer);
             _update.Visible = true;
-            ClientSize = new Size(ClientSize.Width, 642);
+            _update.BringToFront();
+        }
+
+        private static string MyVersion
+        {
+            get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(3); }
         }
 
         private void OpenInBrowser(string url)

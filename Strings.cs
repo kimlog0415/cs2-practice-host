@@ -68,11 +68,32 @@ namespace CS2PracticeHost
         public static string CopyLink { get { return T("참가 링크 복사 (친구에게 보내기)", "Copy join link (send to a friend)"); } }
         public static string CopyAddress { get { return T("콘솔용 주소 복사", "Copy console address"); } }
 
-        public static string UpdateFound(string version)
+        // ---------- 새 판 알림 (덮는 판) ----------
+        // 띠 아래 한 줄로 두니 놓치고 지나갔다(2026-10-04 디렉터 지적). 창을 덮는다.
+
+        public static string UpdateTitle { get { return T("새 판이 나왔어요", "A new version is out"); } }
+
+        /// <summary>쓰는 판과 새 판을 나란히. 번호뿐이라 언어를 안 가린다.</summary>
+        public static string UpdateVersions(string mine, string newer)
         {
-            return T("새 버전 " + version + " 이 나왔어요 — 받으러 가기",
-                     "Version " + version + " is out — get it");
+            return mine + "   →   " + newer;
         }
+
+        /// <summary>
+        /// 설치기가 없는 단일 exe라 앱이 스스로 갈아치울 수 없다(돌고 있는 자기 파일이 잠긴다).
+        /// 받아서 덮는 것은 사람이 하는 일이므로 그걸 문구로 말해 준다.
+        /// </summary>
+        public static string UpdateHow
+        {
+            get
+            {
+                return T("받아서 지금 쓰는 파일을 덮은 뒤\n다시 열어 주세요.",
+                         "Download it, replace the file you are using,\nthen open it again.");
+            }
+        }
+
+        public static string UpdateGet { get { return T("받으러 가기", "Get it"); } }
+        public static string UpdateLater { get { return T("나중에", "Later"); } }
 
         // ---------- 상태 띠 ----------
 
