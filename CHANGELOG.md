@@ -1,5 +1,15 @@
 # 변경 내역 / Changelog
 
+## 1.3.0 (2026-10-17)
+
+- 받아 두신 창작마당 맵을 고를 수 있고, F10으로도 바꿀 수 있습니다.
+
+---
+
+- You can pick the workshop maps you have downloaded, and switch to them with F10.
+
+---
+
 ## 1.2.0 (2026-10-13)
 
 - 경쟁·윙맨·러시 모드가 생겼습니다.
