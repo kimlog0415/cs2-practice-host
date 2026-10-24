@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace CS2PracticeHost
 {
-    internal sealed class MainForm : Form
+    internal sealed class MainForm : Form, IMessageFilter
     {
         private readonly Settings _settings;
 
@@ -24,16 +24,18 @@ namespace CS2PracticeHost
         private readonly ComboBox _mode = new ComboBox { Visible = false };
         private readonly ComboBox _map = new ComboBox { Visible = false };
         private readonly Panel _tabs = new Panel();
+        private readonly Panel _tileHost = new Panel();
         private readonly FlowLayoutPanel _tileArea = new FlowLayoutPanel();
+        private readonly Panel _thumb = new Panel();
         private readonly RadioButton _kindBuiltIn = new RadioButton();
         private readonly RadioButton _kindWorkshop = new RadioButton();
 
         /// <summary>지금 타일 칸에 보이는 쪽. 기본 맵과 창작마당을 왼쪽 탭으로 갈라 하나씩 보여 준다.</summary>
         private bool _showWorkshop;
 
-        private readonly ComboBox _bots = new ComboBox();
-        private readonly ComboBox _level = new ComboBox();
-        private readonly ComboBox _team = new ComboBox();
+        private readonly ComboBox _bots = new Theme.DarkCombo();
+        private readonly ComboBox _level = new Theme.DarkCombo();
+        private readonly ComboBox _team = new Theme.DarkCombo();
         private readonly Button _lang = new Button();
         private readonly Button _help = new Button();
         private readonly Button _launch = new Button();
@@ -94,7 +96,7 @@ namespace CS2PracticeHost
             // 포터블 exe라 설치 목록에도 안 뜬다. 쓰는 판이 몇인지 볼 곳이 창 제목뿐이다
             Text = Program.Title + " " + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
             Font = new Font(Strings.UiFont, 10);
-            ClientSize = new Size(760, 636);
+            ClientSize = new Size(980, 770);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
@@ -109,7 +111,7 @@ namespace CS2PracticeHost
             DoubleBuffered = true;
 
             // 상태 띠 — 머리 오른쪽의 둥근 알약. 색은 상태마다 SetBanner가 정한다
-            _banner.Location = new Point(316, 12);
+            _banner.Location = new Point(536, 12);
             _banner.Size = new Size(344, 32);
             _banner.TextAlign = ContentAlignment.MiddleLeft;
             _banner.Padding = new Padding(12, 0, 0, 0);
@@ -117,7 +119,7 @@ namespace CS2PracticeHost
             Controls.Add(_banner);
             Theme.Round(_banner, 16);
 
-            _lang.Location = new Point(668, 12);
+            _lang.Location = new Point(888, 12);
             _lang.Size = new Size(36, 32);
             _lang.Font = new Font(Strings.UiFont, 9, FontStyle.Bold);
             _lang.TabStop = false;
@@ -126,7 +128,7 @@ namespace CS2PracticeHost
             Controls.Add(_lang);
 
             _help.Text = "?";
-            _help.Location = new Point(708, 12);
+            _help.Location = new Point(928, 12);
             _help.Size = new Size(32, 32);
             _help.Font = new Font(Strings.UiFont, 11, FontStyle.Bold);
             _help.TabStop = false;
@@ -138,7 +140,7 @@ namespace CS2PracticeHost
             Controls.Add(_map);
 
             _tabs.Location = new Point(20, 57);
-            _tabs.Size = new Size(720, 42);
+            _tabs.Size = new Size(940, 42);
             _tabs.BackColor = Color.Transparent;
             Controls.Add(_tabs);
 
@@ -149,8 +151,8 @@ namespace CS2PracticeHost
             AddRow(_level, ref x);
             AddRow(_team, ref x);
 
-            _status.Location = new Point(20, 444);
-            _status.Size = new Size(720, 104);
+            _status.Location = new Point(20, 556);
+            _status.Size = new Size(940, 120);
             _status.BackColor = Theme.Note;
             _status.ForeColor = Theme.Text;
             _status.Padding = new Padding(12, 8, 12, 8);
@@ -158,8 +160,8 @@ namespace CS2PracticeHost
             Controls.Add(_status);
             Theme.Round(_status, 8);
 
-            _launch.Location = new Point(20, 562);
-            _launch.Size = new Size(330, 56);
+            _launch.Location = new Point(20, 690);
+            _launch.Size = new Size(440, 56);
             _launch.Font = new Font(Strings.UiFont, 12, FontStyle.Bold);
             _launch.Click += OnLaunchClick;
             Theme.Flat(_launch, Theme.Gold, Theme.Gold, Theme.OnGold);
@@ -167,16 +169,16 @@ namespace CS2PracticeHost
             Controls.Add(_launch);
             Theme.Round(_launch, 8);
 
-            _copyLink.Location = new Point(360, 562);
-            _copyLink.Size = new Size(220, 56);
+            _copyLink.Location = new Point(470, 690);
+            _copyLink.Size = new Size(280, 56);
             _copyLink.Font = new Font(Strings.UiFont, 10, FontStyle.Bold);
             _copyLink.Click += OnCopyLinkClick;
             Theme.Flat(_copyLink, Theme.LinkFill, Theme.Blue, Theme.Text);
             Controls.Add(_copyLink);
             Theme.Round(_copyLink, 8);
 
-            _copyAddress.Location = new Point(590, 562);
-            _copyAddress.Size = new Size(150, 56);
+            _copyAddress.Location = new Point(760, 690);
+            _copyAddress.Size = new Size(200, 56);
             _copyAddress.Click += OnCopyAddressClick;
             Theme.Flat(_copyAddress, Theme.Panel, Theme.Edge, Theme.SubText);
             Controls.Add(_copyAddress);
@@ -269,15 +271,86 @@ namespace CS2PracticeHost
             _kindBuiltIn.Click += (s, e) => ShowKind(false);
             _kindWorkshop.Click += (s, e) => ShowKind(true);
 
-            _tileArea.Location = new Point(128, 112);
-            _tileArea.Size = new Size(612, 262);
+            // 윈도우 기본 스크롤바는 어두운 화면에서 흰 막대로 튀었다(디렉터 지적). 타일 칸을 그 막대 폭만큼
+            // 넓혀 바깥 틀에 가려지게 하고, 대신 얇은 막대(_thumb)를 직접 그린다
+            _tileHost.Location = new Point(128, 112);
+            _tileHost.Size = new Size(832, 380);
+            _tileHost.BackColor = Theme.Well;
+            Controls.Add(_tileHost);
+            Theme.Round(_tileHost, 8);
+
+            _tileArea.Location = new Point(0, 0);
+            _tileArea.Size = new Size(_tileHost.Width + SystemInformation.VerticalScrollBarWidth, _tileHost.Height);
             _tileArea.FlowDirection = FlowDirection.LeftToRight;
             _tileArea.WrapContents = true;
             _tileArea.AutoScroll = true;
             _tileArea.BackColor = Theme.Well;
-            _tileArea.Padding = new Padding(5);
-            Controls.Add(_tileArea);
-            Theme.Round(_tileArea, 8);
+            _tileArea.Padding = new Padding(6);
+            _tileArea.Scroll += (s, e) => UpdateThumb();
+            _tileArea.Layout += (s, e) => UpdateThumb();
+            _tileHost.Controls.Add(_tileArea);
+
+            _thumb.Width = 6;
+            _thumb.BackColor = Theme.Edge;
+            _thumb.Cursor = Cursors.Hand;
+            _thumb.Visible = false;
+            _thumb.MouseDown += (s, e) => { _dragFrom = e.Y; };
+            _thumb.MouseMove += OnThumbDrag;
+            _thumb.MouseUp += (s, e) => { _dragFrom = -1; };
+            _thumb.MouseEnter += (s, e) => _thumb.BackColor = Theme.Blue;
+            _thumb.MouseLeave += (s, e) => _thumb.BackColor = Theme.Edge;
+            _tileHost.Controls.Add(_thumb);
+            _thumb.BringToFront();
+
+            // 타일은 포커스를 못 받아서 휠이 타일 칸에 안 온다. 커서가 칸 위에 있으면 휠을 여기서 받는다
+            Application.AddMessageFilter(this);
+            Disposed += (s, e) => Application.RemoveMessageFilter(this);
+        }
+
+        private const int WM_MOUSEWHEEL = 0x020A;
+
+        public bool PreFilterMessage(ref Message m)
+        {
+            if (m.Msg != WM_MOUSEWHEEL || !Visible) return false;
+            if (!_tileHost.RectangleToScreen(_tileHost.ClientRectangle).Contains(Cursor.Position)) return false;
+
+            int delta = (short)((long)m.WParam >> 16);
+            ScrollTilesBy(-delta / 120 * (MapTile.TileHeight + 6) / 2);
+            return true;
+        }
+
+        private int TileContentHeight { get { return _tileArea.DisplayRectangle.Height; } }
+
+        private void ScrollTilesBy(int dy)
+        {
+            int max = Math.Max(0, TileContentHeight - _tileHost.Height);
+            int next = Math.Min(max, Math.Max(0, -_tileArea.AutoScrollPosition.Y + dy));
+            _tileArea.AutoScrollPosition = new Point(0, next);
+            UpdateThumb();
+        }
+
+        /// <summary>얇은 막대의 크기와 자리를 지금 스크롤에 맞춘다. 다 보이면 감춘다.</summary>
+        private void UpdateThumb()
+        {
+            int content = TileContentHeight, view = _tileHost.Height;
+            if (content <= view + 1) { _thumb.Visible = false; return; }
+
+            int height = Math.Max(36, view * view / content);
+            int top = (-_tileArea.AutoScrollPosition.Y) * (view - height - 8) / (content - view) + 4;
+            _thumb.SetBounds(_tileHost.Width - 10, top, 6, height);
+            Theme.Round(_thumb, 3);
+            _thumb.Visible = true;
+        }
+
+        private int _dragFrom = -1;
+
+        private void OnThumbDrag(object sender, MouseEventArgs e)
+        {
+            if (_dragFrom < 0 || e.Button != MouseButtons.Left) return;
+            int content = TileContentHeight, view = _tileHost.Height;
+            int track = view - _thumb.Height - 8;
+            if (track <= 0) return;
+            ScrollTilesBy((e.Y - _dragFrom) * (content - view) / track);
         }
 
         private void ShowKind(bool workshop)
@@ -292,10 +365,10 @@ namespace CS2PracticeHost
         /// <summary>봇 칸 셋은 타일 칸 아래 한 줄에 같은 폭으로. 이름은 칸 위에 작게.</summary>
         private void AddRow(ComboBox box, ref int x)
         {
-            const int width = 196;
+            const int width = 269;
             var text = new Label
             {
-                Location = new Point(x, 386), AutoSize = true,
+                Location = new Point(x, 504), AutoSize = true,
                 ForeColor = Theme.SubText, BackColor = Color.Transparent, Font = new Font(Strings.UiFont, 8.5f),
             };
             Controls.Add(text);
@@ -305,7 +378,7 @@ namespace CS2PracticeHost
             box.FlatStyle = FlatStyle.Flat;
             box.BackColor = Theme.Panel;
             box.ForeColor = Theme.Text;
-            box.Location = new Point(x, 404);
+            box.Location = new Point(x, 522);
             box.Width = width;
             box.MaxDropDownItems = 16;
             box.ItemHeight = 24;
@@ -620,6 +693,7 @@ namespace CS2PracticeHost
             if (!_tileArea.IsHandleCreated) return;
             _tileArea.PerformLayout();   // 막 다시 채운 직후면 타일이 아직 제자리가 아니라 위치를 잘못 잰다
             _tileArea.ScrollControlIntoView(tile);
+            UpdateThumb();
         }
 
         private void OnModeChanged(object sender, EventArgs e)

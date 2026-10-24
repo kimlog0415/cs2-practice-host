@@ -16,8 +16,8 @@ namespace CS2PracticeHost
     /// </summary>
     internal sealed class MapTile : Control
     {
-        public const int TileWidth = 140;
-        public const int TileHeight = 108;
+        public const int TileWidth = 156;
+        public const int TileHeight = 120;
 
         public readonly GameMap Map;
         private Image _picture;

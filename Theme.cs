@@ -49,6 +49,35 @@ namespace CS2PracticeHost
                 control.Region = new Region(path);
         }
 
+        /// <summary>
+        /// 어두운 콤보. 항목 글자는 DrawItem으로 그려지지만 오른쪽 화살표 칸은 윈도우가 흰 상자로 그려서,
+        /// 다 그린 뒤에 그 칸만 덮어 다시 그린다.
+        /// </summary>
+        internal sealed class DarkCombo : ComboBox
+        {
+            private const int WM_PAINT = 0x000F;
+
+            protected override void WndProc(ref Message m)
+            {
+                base.WndProc(ref m);
+                if (m.Msg != WM_PAINT) return;
+
+                int w = SystemInformation.VerticalScrollBarWidth;
+                var arrow = new Rectangle(Width - w - 1, 1, w, Height - 2);
+                using (Graphics g = Graphics.FromHwnd(Handle))
+                using (var back = new SolidBrush(Enabled ? Theme.Panel : Theme.Bottom))
+                using (var edge = new Pen(Theme.Edge))
+                using (var chevron = new Pen(Enabled ? Theme.SubText : Theme.Dim, 1.6f))
+                {
+                    g.FillRectangle(back, arrow);
+                    g.DrawRectangle(edge, 0, 0, Width - 1, Height - 1);
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
+                    int cx = arrow.X + arrow.Width / 2, cy = Height / 2;
+                    g.DrawLines(chevron, new[] { new Point(cx - 4, cy - 2), new Point(cx, cy + 2), new Point(cx + 4, cy - 2) });
+                }
+            }
+        }
+
         /// <summary>납작한 버튼 — 바탕·테두리·글자색만 정한다.</summary>
         public static void Flat(ButtonBase button, Color back, Color border, Color fore)
         {
