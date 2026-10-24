@@ -1,5 +1,25 @@
 # 변경 내역 / Changelog
 
+## 1.4.0 (2026-10-24)
+
+- 맵을 그림 타일로 고릅니다. 모드는 위쪽 탭에서, 기본 맵과 창작마당은 왼쪽 탭에서 나눠 봅니다.
+- 타일의 별로 즐겨찾기를 달면 맨 앞에 옵니다. 타일을 오른쪽 클릭하면 폭탄 1곳·2곳·인질 표시를 달 수 있습니다.
+- 화면이 어두운 색으로 바뀌고 창이 커졌습니다.
+- 윙맨에서 다른 모드로 바꿀 때 「F10을 누르고, 맵이 뜬 뒤 한 번 더」 안내가 뜹니다.
+- 탈환에서 봇이 1명만 나오던 문제를 고쳤습니다.
+- 받아 둔 창작마당 중 열리지 않는 맵(하늘 상자·제작자 시험용 맵)이 목록에 뜨지 않습니다.
+
+---
+
+- Maps are now picked from picture tiles. Modes are tabs along the top; built-in and workshop maps have their own tabs on the left.
+- Star a tile to keep it at the front. Right-click a tile to mark it as one bombsite, two bombsites, or hostage.
+- The window is now dark and larger.
+- When leaving Wingman for another mode, a notice tells you to press F10, then press it once more after the map loads.
+- Fixed Retake starting with only one bot.
+- Workshop maps that can't be opened (skyboxes, authors' test maps) no longer show up in the list.
+
+---
+
 ## 1.3.0 (2026-10-17)
 
 - 받아 두신 창작마당 맵을 고를 수 있고, F10으로도 바꿀 수 있습니다.
