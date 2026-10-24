@@ -36,6 +36,10 @@
     line-height: 1.75;
   }
   main { max-width: 680px; margin: 0 auto; }
+  figure { margin: 18px 0 22px; }
+  figure img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); }
+  figure.narrow img { max-width: 520px; margin: 0 auto; }
+  figcaption { margin-top: 8px; font-size: 13px; color: var(--muted); text-align: center; }
 
   header { padding: 56px 0 8px; text-align: center; }
   header img { width: 88px; height: 88px; }
@@ -191,6 +195,29 @@
   </div>
 </div>
 
+<h3>맵 고르기</h3>
+
+<figure>
+  <img src="/img/app-screen-ko.jpg" alt="CS2 Practice Host 화면 — 위쪽 모드 탭, 왼쪽 기본 맵·창작마당 탭, 맵 그림 타일, 아래 봇 칸과 버튼" loading="lazy" width="986" height="799">
+  <figcaption>위에서 모드, 왼쪽에서 기본 맵·창작마당, 가운데 그림을 눌러 맵을 고릅니다</figcaption>
+</figure>
+
+<ul>
+  <li><strong>모드</strong> — 위쪽 탭. 탭에 마우스를 올리면 어떤 모드인지 한 줄 설명이 뜹니다.</li>
+  <li><strong>기본 맵 / 창작마당</strong> — 왼쪽 탭. 창작마당에는 받아 두신 맵 중 그 모드에 맞는 것만 나옵니다.</li>
+  <li><strong>맵</strong> — 그림을 누르면 고릅니다. 고른 맵은 파란 테두리로 보입니다.</li>
+  <li><strong>즐겨찾기</strong> — 그림 오른쪽 위 ☆를 누르면 ★로 바뀌고, 그 맵이 맨 앞으로 옵니다. 한 번 더 누르면 풀립니다.</li>
+</ul>
+
+<h3>맵에 폭탄·인질 표시 달기</h3>
+
+<figure class="narrow">
+  <img src="/img/app-menu-ko.jpg" alt="맵 그림을 오른쪽 클릭하면 뜨는 메뉴 — 폭탄 지점 1곳, 폭탄 지점 2곳, 인질, 기타, 표시 지우기" loading="lazy" width="520" height="290">
+  <figcaption>맵 그림을 <strong>마우스 오른쪽 버튼</strong>으로 누르면 메뉴가 뜹니다</figcaption>
+</figure>
+
+<p>맵 그림을 <strong>오른쪽 클릭</strong>해서 「폭탄 · 지점 1곳」, 「폭탄 · 지점 2곳」, 「인질」, 「기타」 중 하나를 고르면 이름 앞에 표시가 붙습니다(폭탄 모양과 지점 수, 사람 모양). 「표시 지우기」로 되돌립니다. 표시를 달지 않은 맵은 이름 앞부분으로 짐작해 흐리게 보여 줍니다 — <code>de_</code>로 시작하면 폭탄, <code>cs_</code>로 시작하면 인질. 맵 정보에 이런 칸이 없어서 직접 다는 방식입니다. 즐겨찾기와 표시는 새 판을 받아도 남습니다.</p>
+
 <div class="card">
   <p><strong>CS2는 반드시 앱의 ▶ 버튼으로 켜 주세요.</strong></p>
   <p>Steam에서 직접 켜면 앱이 서버 주소를 읽지 못합니다. 주소를 읽는 데 필요한 설정이 앱이 켤 때만 붙기 때문입니다. 이 상태가 되면 앱 오른쪽 위 상태 표시가 노란색으로 바뀌어 알려 줍니다.</p>
@@ -271,6 +298,29 @@
     <p>Nothing to install, and no need to turn on the developer console.</p>
   </div>
 </div>
+
+<h3>Picking a map</h3>
+
+<figure>
+  <img src="/img/app-screen-en.jpg" alt="CS2 Practice Host window — mode tabs on top, Built-in and Workshop tabs on the left, map picture tiles, bot settings and buttons below" loading="lazy" width="986" height="799">
+  <figcaption>Pick the mode on top, Built-in or Workshop on the left, then click a map picture</figcaption>
+</figure>
+
+<ul>
+  <li><strong>Mode</strong> — the tabs on top. Hover a tab for a one-line description of the mode.</li>
+  <li><strong>Built-in / Workshop</strong> — the tabs on the left. Workshop lists the maps you have downloaded that suit the mode.</li>
+  <li><strong>Map</strong> — click a picture to pick it. The picked map has a blue border.</li>
+  <li><strong>Favorites</strong> — click the ☆ at the top right of a picture to make it ★; that map moves to the front. Click again to undo.</li>
+</ul>
+
+<h3>Marking a map as bomb or hostage</h3>
+
+<figure class="narrow">
+  <img src="/img/app-menu-en.jpg" alt="The menu that opens when you right-click a map picture — Bomb 1 site, Bomb 2 sites, Hostage, Other, Clear" loading="lazy" width="520" height="290">
+  <figcaption><strong>Right-click</strong> a map picture to open the menu</figcaption>
+</figure>
+
+<p><strong>Right-click</strong> a map picture and choose "Bomb · 1 site", "Bomb · 2 sites", "Hostage" or "Other" — a mark appears before the name (a bomb with the number of sites, or a person). "Clear" removes it. Maps you have not marked get a faded guess from the name — <code>de_</code> means bomb, <code>cs_</code> means hostage. Map details don't carry this information, so you mark it yourself. Favorites and marks stay when you update the app.</p>
 
 <div class="card">
   <p><strong>Always launch CS2 with the app's ▶ button.</strong></p>
