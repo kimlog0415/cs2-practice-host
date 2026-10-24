@@ -54,13 +54,19 @@ namespace CS2PracticeHost
 
         public string Name
         {
+            get { return IsWorkshop ? Strings.WorkshopMap(TileName) : TileName; }
+        }
+
+        /// <summary>타일에 쓰는 이름. 창작마당 칸 안에 놓이니 「창작마당 · 」은 뗀다.</summary>
+        public string TileName
+        {
             get
             {
                 if (!IsWorkshop) return Strings.En ? En : Ko;
 
                 WorkshopItem known = WorkshopInfo.Of(WorkshopId);
-                if (known == null || string.IsNullOrEmpty(known.Title)) return Strings.WorkshopMap(WorkshopMapName);
-                return Strings.WorkshopMap(OneOfSeveral ? known.Title + " (" + WorkshopMapName + ")" : known.Title);
+                if (known == null || string.IsNullOrEmpty(known.Title)) return WorkshopMapName;
+                return OneOfSeveral ? known.Title + " (" + WorkshopMapName + ")" : known.Title;
             }
         }
 

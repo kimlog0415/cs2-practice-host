@@ -181,7 +181,7 @@ namespace CS2PracticeHost
                 Report.Is("받기 전엔 없나", box.Items.Contains("창작마당 · Fresh Map"), false);
 
                 Fake.WorkshopMaps("4242=de_fresh");
-                typeof(MainForm).GetMethod("OnMapDropDown",
+                typeof(MainForm).GetMethod("RescanWorkshop",
                         System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
                     .Invoke(form, new object[] { box, System.EventArgs.Empty });
 

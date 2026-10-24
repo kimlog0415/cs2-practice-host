@@ -17,8 +17,19 @@ namespace CS2PracticeHost
 
         private readonly Label _banner = new Label();
         private readonly Label _status = new Label();
-        private readonly ComboBox _mode = new ComboBox();
-        private readonly ComboBox _map = new ComboBox();
+
+        // 고른 모드·맵은 보이지 않는 콤보 둘이 들고 있다. 위쪽 탭과 맵 타일은 그 값을 그리고 바꾸는 쪽이다 —
+        // 저장·F10 파일·언어 전환이 전부 이 둘의 「몇 번째를 골랐나」로 짜여 있어서, 화면만 갈고 흐름은 그대로 둔다
+        private readonly ComboBox _mode = new ComboBox { Visible = false };
+        private readonly ComboBox _map = new ComboBox { Visible = false };
+        private readonly Panel _tabs = new Panel();
+        private readonly FlowLayoutPanel _tileArea = new FlowLayoutPanel();
+        private readonly RadioButton _kindBuiltIn = new RadioButton();
+        private readonly RadioButton _kindWorkshop = new RadioButton();
+
+        /// <summary>지금 타일 칸에 보이는 쪽. 기본 맵과 창작마당을 왼쪽 탭으로 갈라 하나씩 보여 준다.</summary>
+        private bool _showWorkshop;
+
         private readonly ComboBox _bots = new ComboBox();
         private readonly ComboBox _level = new ComboBox();
         private readonly ComboBox _team = new ComboBox();
@@ -67,7 +78,12 @@ namespace CS2PracticeHost
             SaveAll();
 
             _watch.Tick += (s, e) => RefreshStatus();
-            Shown += (s, e) => { RefreshStatus(); _watch.Start(); ShowUpdateIfAny(); LookUpWorkshopIfAny(); };
+            // 고른 타일로 내려 주는 것은 창이 뜬 뒤에야 먹는다. 그 전엔 칸이 맨 위에 서서 고른 맵이 안 보인다
+            Shown += (s, e) =>
+            {
+                BeginInvoke((Action)SyncTileSelection);   // 타일 배치가 끝난 다음 차례에
+                RefreshStatus(); _watch.Start(); ShowUpdateIfAny(); LookUpWorkshopIfAny(); LoadBuiltInPictures();
+            };
         }
 
         // ---------- 화면 ----------
@@ -77,7 +93,7 @@ namespace CS2PracticeHost
             // 포터블 exe라 설치 목록에도 안 뜬다. 쓰는 판이 몇인지 볼 곳이 창 제목뿐이다
             Text = Program.Title + " " + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
             Font = new Font(Strings.UiFont, 10);
-            ClientSize = new Size(424, 612);
+            ClientSize = new Size(760, 636);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
@@ -87,13 +103,13 @@ namespace CS2PracticeHost
             catch (Exception) { }
 
             _banner.Location = new Point(20, 14);
-            _banner.Size = new Size(312, 32);
+            _banner.Size = new Size(648, 32);
             _banner.TextAlign = ContentAlignment.MiddleLeft;
             _banner.Padding = new Padding(8, 0, 0, 0);
             _banner.Font = new Font(Strings.UiFont, 10, FontStyle.Bold);
             Controls.Add(_banner);
 
-            _lang.Location = new Point(336, 14);
+            _lang.Location = new Point(672, 14);
             _lang.Size = new Size(32, 32);
             _lang.Font = new Font(Strings.UiFont, 9, FontStyle.Bold);
             _lang.TabStop = false;
@@ -101,38 +117,45 @@ namespace CS2PracticeHost
             Controls.Add(_lang);
 
             _help.Text = "?";
-            _help.Location = new Point(372, 14);
+            _help.Location = new Point(708, 14);
             _help.Size = new Size(32, 32);
             _help.Font = new Font(Strings.UiFont, 11, FontStyle.Bold);
             _help.TabStop = false;
             _help.Click += OnHelpClick;
             Controls.Add(_help);
 
-            int y = 62;
-            AddRow(_mode, ref y);
-            AddRow(_map, ref y);
-            AddRow(_bots, ref y);
-            AddRow(_level, ref y);
-            AddRow(_team, ref y);
+            Controls.Add(_mode);
+            Controls.Add(_map);
 
-            _status.Location = new Point(20, y + 2);
-            _status.Size = new Size(384, 192);
+            _tabs.Location = new Point(20, 56);
+            _tabs.Size = new Size(720, 36);
+            Controls.Add(_tabs);
+
+            BuildTileArea();
+
+            int x = 20;
+            AddRow(_bots, 150, ref x);
+            AddRow(_level, 150, ref x);
+            AddRow(_team, 0, ref x);
+
+            _status.Location = new Point(20, 452);
+            _status.Size = new Size(720, 104);
             _status.ForeColor = Color.DarkGreen;
             Controls.Add(_status);
 
-            _launch.Location = new Point(20, 462);
-            _launch.Size = new Size(384, 46);
+            _launch.Location = new Point(20, 566);
+            _launch.Size = new Size(330, 52);
             _launch.Font = new Font(Strings.UiFont, 11, FontStyle.Bold);
             _launch.Click += OnLaunchClick;
             Controls.Add(_launch);
 
-            _copyLink.Location = new Point(20, 516);
-            _copyLink.Size = new Size(384, 40);
+            _copyLink.Location = new Point(360, 566);
+            _copyLink.Size = new Size(220, 52);
             _copyLink.Click += OnCopyLinkClick;
             Controls.Add(_copyLink);
 
-            _copyAddress.Location = new Point(20, 564);
-            _copyAddress.Size = new Size(384, 32);
+            _copyAddress.Location = new Point(590, 566);
+            _copyAddress.Size = new Size(150, 52);
             _copyAddress.Click += OnCopyAddressClick;
             Controls.Add(_copyAddress);
 
@@ -155,27 +178,28 @@ namespace CS2PracticeHost
 
             SetUpdateFonts();
 
-            _updateTitle.Location = new Point(20, 180);
+            int mid = ClientSize.Width / 2;
+            _updateTitle.Location = new Point(mid - 192, 180);
             _updateTitle.Size = new Size(384, 40);
             _updateTitle.TextAlign = ContentAlignment.MiddleCenter;
             _update.Controls.Add(_updateTitle);
 
-            _updateVersions.Location = new Point(20, 228);
+            _updateVersions.Location = new Point(mid - 192, 228);
             _updateVersions.Size = new Size(384, 30);
             _updateVersions.TextAlign = ContentAlignment.MiddleCenter;
             _update.Controls.Add(_updateVersions);
 
-            _updateHow.Location = new Point(20, 282);
+            _updateHow.Location = new Point(mid - 192, 282);
             _updateHow.Size = new Size(384, 56);
             _updateHow.TextAlign = ContentAlignment.MiddleCenter;
             _update.Controls.Add(_updateHow);
 
-            _updateGet.Location = new Point(92, 360);
+            _updateGet.Location = new Point(mid - 120, 360);
             _updateGet.Size = new Size(240, 44);
             _updateGet.Click += (s, e) => OpenInBrowser(SiteUrl);
             _update.Controls.Add(_updateGet);
 
-            _updateLater.Location = new Point(92, 416);
+            _updateLater.Location = new Point(mid - 120, 416);
             _updateLater.Size = new Size(240, 22);
             _updateLater.TextAlign = ContentAlignment.MiddleCenter;
             _updateLater.LinkClicked += (s, e) => _update.Visible = false;
@@ -191,25 +215,73 @@ namespace CS2PracticeHost
             _updateGet.Font = new Font(Strings.UiFont, 11, FontStyle.Bold);
         }
 
-        private void AddRow(ComboBox box, ref int y)
+        /// <summary>
+        /// 왼쪽 탭(기본 맵 / 창작마당)과 그 옆 타일 칸. 한 번에 한 쪽만 보여 준다 — 둘을 위아래로 쌓으니
+        /// 창작마당이 많을 때 기본 맵이 밀려 올라가 안 보였다(2026-10-24 디렉터 지시로 탭을 나눔).
+        /// </summary>
+        private void BuildTileArea()
         {
-            var text = new Label { Location = new Point(20, y + 4), AutoSize = true };
-            box.DropDownStyle = ComboBoxStyle.DropDownList;
-            box.Location = new Point(120, y);
-            box.Width = 284;
-            box.MaxDropDownItems = 16;
+            int y = 100;
+            foreach (RadioButton kind in new[] { _kindBuiltIn, _kindWorkshop })
+            {
+                kind.Appearance = Appearance.Button;
+                kind.AutoCheck = false;
+                kind.FlatStyle = FlatStyle.Flat;
+                kind.TextAlign = ContentAlignment.MiddleCenter;
+                kind.Location = new Point(20, y);
+                kind.Size = new Size(96, 56);
+                kind.TabStop = false;
+                kind.FlatAppearance.CheckedBackColor = Color.FromArgb(25, 118, 210);
+                kind.FlatAppearance.BorderColor = Color.FromArgb(200, 204, 210);
+                Controls.Add(kind);
+                y += 60;
+            }
+            _kindBuiltIn.Click += (s, e) => ShowKind(false);
+            _kindWorkshop.Click += (s, e) => ShowKind(true);
+
+            _tileArea.Location = new Point(124, 100);
+            _tileArea.Size = new Size(616, 300);
+            _tileArea.FlowDirection = FlowDirection.LeftToRight;
+            _tileArea.WrapContents = true;
+            _tileArea.AutoScroll = true;
+            _tileArea.BackColor = Color.FromArgb(246, 247, 249);
+            _tileArea.Padding = new Padding(4);
+            Controls.Add(_tileArea);
+        }
+
+        private void ShowKind(bool workshop)
+        {
+            if (workshop && !_maps.Any(m => m.IsWorkshop)) return;   // 이 모드에 맞는 창작마당 맵이 없다
+            if (workshop == _showWorkshop) { RescanWorkshop(this, EventArgs.Empty); return; }
+            _showWorkshop = workshop;
+            RenderTiles();
+            SyncTileSelection();
+        }
+
+        /// <summary>봇 칸 셋은 타일 아래 한 줄에 나란히. 마지막 칸은 남은 폭을 다 쓴다.</summary>
+        private void AddRow(ComboBox box, int width, ref int x)
+        {
+            const int y = 412;
+            var text = new Label { Location = new Point(x, y + 4), AutoSize = true };
             Controls.Add(text);
-            Controls.Add(box);
             _rowLabels.Add(text);
-            y += 40;
+
+            box.DropDownStyle = ComboBoxStyle.DropDownList;
+            box.Location = new Point(x + 74, y);
+            box.Width = width > 0 ? width : 740 - (x + 74);
+            box.MaxDropDownItems = 16;
+            Controls.Add(box);
+            x += 74 + box.Width + 16;
         }
 
         /// <summary>고른 값과 무관하게 늘 같은 자리에 있는 문구.</summary>
         private void SetStaticText()
         {
-            string[] rows = { Strings.RowMode, Strings.RowMap, Strings.RowBots, Strings.RowLevel, Strings.RowTeam };
+            string[] rows = { Strings.RowBots, Strings.RowLevel, Strings.RowTeam };
             for (int i = 0; i < _rowLabels.Count && i < rows.Length; i++)
                 _rowLabels[i].Text = rows[i];
+
+            SyncKindTabs();
 
             _lang.Text = Strings.LangToggle;
             _launch.Text = Strings.Launch;
@@ -232,16 +304,21 @@ namespace CS2PracticeHost
             FillChoices();
 
             _mode.SelectedIndexChanged += OnModeChanged;
-            _map.DropDown += OnMapDropDown;
+            _mode.SelectedIndexChanged += (s, e) => SyncTabs();
+            _map.SelectedIndexChanged += (s, e) => SyncTileSelection();
             foreach (ComboBox box in new[] { _map, _bots, _level, _team })
                 box.SelectedIndexChanged += (s, e) => SaveAll();
+
+            // Steam에서 새로 구독하고 돌아오면 창이 다시 앞으로 온다 — 그때 폴더를 다시 본다
+            Activated += RescanWorkshop;
         }
 
         /// <summary>
-        /// 앱을 켜 둔 채 Steam에서 새로 구독한 창작마당 맵이 바로 보이게, 맵 칸을 펼칠 때 폴더를 다시 본다.
-        /// 달라진 게 없으면 손대지 않는다 — 펼칠 때마다 목록이 깜빡이지 않게.
+        /// 앱을 켜 둔 채 Steam에서 새로 구독한 창작마당 맵이 바로 보이게 폴더를 다시 본다.
+        /// 창이 앞으로 올 때와 지금 탭을 한 번 더 누를 때 부른다.
+        /// 달라진 게 없으면 손대지 않는다 — 부를 때마다 타일이 깜빡이지 않게.
         /// </summary>
-        private void OnMapDropDown(object sender, EventArgs e)
+        private void RescanWorkshop(object sender, EventArgs e)
         {
             if (_mode.SelectedIndex < 0) return;
 
@@ -250,11 +327,15 @@ namespace CS2PracticeHost
             if (now.SequenceEqual(shown)) return;
 
             GameMap keep = SelectedMap;
+            bool viewing = _showWorkshop;
             bool wasLoading = _loading;
             _loading = true;
             FillMaps(keep != null ? keep.Id : null);
             _loading = wasLoading;
             SaveAll();
+
+            // 창작마당 칸을 보다가 새 맵이 생겼으면 그 칸에 머문다 — 고른 맵 쪽으로 튀면 새 맵이 안 보인다
+            if (viewing != _showWorkshop) ShowKind(viewing);
 
             LookUpWorkshopIfAny();   // 새로 받은 맵의 제목·태그 — 모르는 번호만 묻는다
         }
@@ -264,6 +345,7 @@ namespace CS2PracticeHost
         {
             _mode.Items.Clear();
             foreach (GameMode m in GameData.Modes) _mode.Items.Add(m.Name);
+            BuildTabs();
 
             _bots.Items.Clear();
             foreach (string c in GameData.BotCounts) _bots.Items.Add(c);
@@ -310,11 +392,126 @@ namespace CS2PracticeHost
             _map.Items.Clear();
             foreach (GameMap m in _maps) _map.Items.Add(m.Name);
 
-            if (_maps.Length == 0) return;   // 설치된 맵이 없으면 고를 것도 없다 (빈 목록에 SelectedIndex를 주면 예외)
-
             int index = Array.FindIndex(_maps, m => m.Id == wantedId);
             if (index < 0) index = Array.FindIndex(_maps, m => m.Id == "de_dust2");
-            _map.SelectedIndex = Math.Max(0, index);
+            if (_maps.Length > 0) index = Math.Max(0, index);
+
+            // 왼쪽 탭은 고른 맵이 있는 쪽을 연다 — 창작마당 맵을 골라 둔 채 켜면 창작마당 칸부터
+            _showWorkshop = index >= 0 && _maps[index].IsWorkshop;
+            RenderTiles();
+
+            if (index < 0) return;   // 설치된 맵이 없으면 고를 것도 없다 (빈 목록에 SelectedIndex를 주면 예외)
+            _map.SelectedIndex = index;
+            SyncTileSelection();   // 같은 자리를 다시 고르면 SelectedIndexChanged가 안 와서 직접 맞춘다
+        }
+
+        // ---------- 탭과 타일 ----------
+
+        /// <summary>모드 탭. 게임 '연습' 탭의 순서 그대로다. 언어를 바꾸면 이름이 바뀌니 다시 만든다.</summary>
+        private void BuildTabs()
+        {
+            _tabs.Controls.Clear();
+            int count = GameData.Modes.Length;
+            int width = (_tabs.Width - (count - 1) * 4) / count;
+            for (int i = 0; i < count; i++)
+            {
+                int index = i;
+                var tab = new RadioButton
+                {
+                    Text = GameData.Modes[i].Name,
+                    Appearance = Appearance.Button,
+                    AutoCheck = false,              // 고른 것은 _mode가 정한다. 눌렀다고 먼저 바뀌면 둘이 어긋난다
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    FlatStyle = FlatStyle.Flat,
+                    Location = new Point(i * (width + 4), 0),
+                    Size = new Size(width, _tabs.Height),
+                    TabStop = false,
+                };
+                tab.FlatAppearance.CheckedBackColor = Color.FromArgb(25, 118, 210);
+                tab.FlatAppearance.BorderColor = Color.FromArgb(200, 204, 210);
+                tab.Click += (s, e) => OnTabClick(index);
+                _tabs.Controls.Add(tab);
+            }
+            SyncTabs();
+        }
+
+        private void OnTabClick(int index)
+        {
+            if (index == _mode.SelectedIndex) { RescanWorkshop(this, EventArgs.Empty); return; }
+            _mode.SelectedIndex = index;   // OnModeChanged가 맵 타일을 다시 채운다
+        }
+
+        private void SyncTabs()
+        {
+            for (int i = 0; i < _tabs.Controls.Count; i++)
+            {
+                var tab = (RadioButton)_tabs.Controls[i];
+                tab.Checked = i == _mode.SelectedIndex;
+                tab.ForeColor = tab.Checked ? Color.White : SystemColors.ControlText;
+                tab.Font = new Font(Strings.UiFont, 10, tab.Checked ? FontStyle.Bold : FontStyle.Regular);
+            }
+        }
+
+        /// <summary>_maps 중 왼쪽 탭이 가리키는 쪽만 타일로.</summary>
+        private void RenderTiles()
+        {
+            _tileArea.SuspendLayout();
+            foreach (Control old in _tileArea.Controls.Cast<Control>().ToArray()) old.Dispose();
+            _tileArea.Controls.Clear();
+
+            for (int i = 0; i < _maps.Length; i++)
+            {
+                if (_maps[i].IsWorkshop != _showWorkshop) continue;
+                int index = i;
+                var tile = new MapTile(_maps[i]);
+                tile.Click += (s, e) => _map.SelectedIndex = index;
+                _tileArea.Controls.Add(tile);
+            }
+
+            _tileArea.AutoScrollPosition = new Point(0, 0);
+            _tileArea.ResumeLayout();
+            SyncKindTabs();
+        }
+
+        /// <summary>왼쪽 탭 — 지금 보이는 쪽을 켜고, 맵 수를 붙인다. 창작마당 맵이 없는 모드면 그 탭은 흐리게.</summary>
+        private void SyncKindTabs()
+        {
+            int workshop = _maps.Count(m => m.IsWorkshop);
+            _kindBuiltIn.Text = Strings.KindBuiltIn + "\n" + (_maps.Length - workshop);
+            _kindWorkshop.Text = Strings.KindWorkshop + "\n" + workshop;
+            _kindWorkshop.Enabled = workshop > 0;
+
+            foreach (RadioButton kind in new[] { _kindBuiltIn, _kindWorkshop })
+            {
+                kind.Checked = (kind == _kindWorkshop) == _showWorkshop;
+                kind.ForeColor = kind.Checked ? Color.White : SystemColors.ControlText;
+                kind.Font = new Font(Strings.UiFont, 10, kind.Checked ? FontStyle.Bold : FontStyle.Regular);
+            }
+        }
+
+        private IEnumerable<MapTile> Tiles
+        {
+            get { return _tileArea.Controls.OfType<MapTile>(); }
+        }
+
+        private void SyncTileSelection()
+        {
+            GameMap selected = SelectedMap;
+            foreach (MapTile tile in Tiles)
+            {
+                tile.Selected = selected != null && tile.Map.Id == selected.Id;
+                if (tile.Selected) ScrollTo(tile);
+            }
+        }
+
+        /// <summary>
+        /// 고른 타일이 칸 밖이면 보이게 내린다. 창이 뜨기 전엔 먹지 않아서 Shown 뒤에 한 번 더 부른다.
+        /// </summary>
+        private void ScrollTo(MapTile tile)
+        {
+            if (!_tileArea.IsHandleCreated) return;
+            _tileArea.PerformLayout();   // 막 다시 채운 직후면 타일이 아직 제자리가 아니라 위치를 잘못 잰다
+            _tileArea.ScrollControlIntoView(tile);
         }
 
         private void OnModeChanged(object sender, EventArgs e)
@@ -634,8 +831,8 @@ namespace CS2PracticeHost
         }
 
         /// <summary>
-        /// 받아 둔 창작마당 맵의 제목·태그를 Steam에 물어본다. 적어 둔 것이 있으면 안 나간다.
-        /// 받아 오기 전에는 맵 이름으로 보이고 Classic 자리에 있다가, 받아 오면 그 자리에서 바뀐다.
+        /// 받아 둔 창작마당 맵의 제목·태그·대표 그림을 Steam에 물어본다. 적어 둔 것이 있으면 안 나간다.
+        /// 받아 오기 전에는 맵 이름만, Classic 자리에 있다가, 받아 오면 그 자리에서 바뀐다.
         /// </summary>
         private async void LookUpWorkshopIfAny()
         {
@@ -643,14 +840,35 @@ namespace CS2PracticeHost
             if (ids.Length == 0) return;
 
             bool gained = await Task.Run(() => WorkshopInfo.FetchMissing(ids));
-            if (!gained || IsDisposed) return;
+            if (IsDisposed) return;
+            if (gained)
+            {
+                GameMap keep = SelectedMap;
+                bool wasLoading = _loading;
+                _loading = true;
+                FillMaps(keep != null ? keep.Id : null);
+                _loading = wasLoading;
+                SaveAll();
+            }
 
-            GameMap keep = SelectedMap;
-            bool wasLoading = _loading;
-            _loading = true;
-            FillMaps(keep != null ? keep.Id : null);
-            _loading = wasLoading;
-            SaveAll();
+            // 그림은 제목보다 늦게 와도 된다 — 받은 것만 그 타일에서 갈아 끼운다
+            bool pictures = await Task.Run(() => Thumbs.FetchMissing(ids));
+            if (!pictures || IsDisposed) return;
+            foreach (MapTile tile in Tiles) tile.ReloadPicture();
+        }
+
+        /// <summary>
+        /// 기본 맵 그림을 처음 한 번 게임 파일에서 꺼낸다. 게임 데이터 목차를 읽는 데 시간이 들어 뒤에서 하고,
+        /// 다 되면 그 자리에서 갈아 끼운다. 이미 꺼내 둔 맵만 있으면 아무것도 안 연다.
+        /// </summary>
+        private async void LoadBuiltInPictures()
+        {
+            string[] ids = GameData.Modes.SelectMany(m => m.Maps).Select(m => m.Id).Distinct()
+                .Where(id => File.Exists(Path.Combine(Cs2Paths.MapsDir, id + ".vpk"))).ToArray();
+
+            bool gained = await Task.Run(() => Thumbs.FetchBuiltInMissing(ids));
+            if (!gained || IsDisposed) return;
+            foreach (MapTile tile in Tiles) tile.ReloadPicture();
         }
 
         /// <summary>확인은 네트워크를 타므로 화면이 멈추지 않게 뒤에서 돌린다.</summary>

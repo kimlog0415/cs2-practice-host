@@ -50,7 +50,7 @@ namespace CS2PracticeHost
                 Report.Is("시작 맵", Peek.Combo(form, "_map"), "수하물");
                 Report.Is("시작 난이도", Peek.Combo(form, "_level"), "어려움");
                 Report.Is("시작 봇 팀", Peek.Combo(form, "_team"), "대테러 팀만");
-                Report.Is("줄 이름", Peek.RowLabel(form, 0), "모드");
+                Report.Is("줄 이름", Peek.RowLabel(form, 0), "봇 수");
 
                 Peek.Click(form, "EN");
 
@@ -59,7 +59,7 @@ namespace CS2PracticeHost
                 Report.Is("영어 봇 수", Peek.Combo(form, "_bots"), "2 bots");
                 Report.Is("영어 난이도", Peek.Combo(form, "_level"), "Hard");
                 Report.Is("영어 봇 팀", Peek.Combo(form, "_team"), "Counter-Terrorists only");
-                Report.Is("영어 줄 이름", Peek.RowLabel(form, 0), "Mode");
+                Report.Is("영어 줄 이름", Peek.RowLabel(form, 0), "Bots");
                 Report.Is("언어 버튼", Peek.Button(form, 0).Text, "한");
 
                 Peek.Click(form, "한");
@@ -69,7 +69,7 @@ namespace CS2PracticeHost
                 Report.Is("되돌린 봇 수", Peek.Combo(form, "_bots"), "2 명");
                 Report.Is("되돌린 난이도", Peek.Combo(form, "_level"), "어려움");
                 Report.Is("되돌린 봇 팀", Peek.Combo(form, "_team"), "대테러 팀만");
-                Report.Is("되돌린 줄 이름", Peek.RowLabel(form, 0), "모드");
+                Report.Is("되돌린 줄 이름", Peek.RowLabel(form, 0), "봇 수");
             }
         }
 
@@ -105,7 +105,7 @@ namespace CS2PracticeHost
                 Report.Is("모드", Peek.Combo(form, "_mode"), "Casual");
                 Report.Is("맵", Peek.Combo(form, "_map"), "Mirage");
                 Report.Is("봇 수", Peek.Combo(form, "_bots"), "Game default");
-                Report.Is("줄 이름", Peek.RowLabel(form, 0), "Mode");
+                Report.Is("줄 이름", Peek.RowLabel(form, 0), "Bots");
                 Report.Is("언어 버튼", Peek.Button(form, 0).Text, "한");
                 Report.Is("켜기 버튼", Peek.Button(form, 2).Text, "▶  Launch CS2 and open server");
             }

@@ -34,8 +34,8 @@ namespace CS2PracticeHost
 
         // ---------- 줄 이름 ----------
 
-        public static string RowMode { get { return T("모드", "Mode"); } }
-        public static string RowMap { get { return T("맵", "Map"); } }
+        public static string KindBuiltIn { get { return T("기본 맵", "Built-in"); } }
+        public static string KindWorkshop { get { return T("창작마당", "Workshop"); } }
         public static string RowBots { get { return T("봇 수", "Bots"); } }
         public static string RowLevel { get { return T("봇 난이도", "Difficulty"); } }
         public static string RowTeam { get { return T("봇 팀", "Bot team"); } }

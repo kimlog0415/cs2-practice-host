@@ -24,6 +24,7 @@
     <Compile Include="..\..\Cs2Watcher.cs" />
     <Compile Include="..\..\GameData.cs" />
     <Compile Include="..\..\MainForm.cs" />
+    <Compile Include="..\..\MapTiles.cs" />
     <Compile Include="..\..\Settings.cs" />
     <Compile Include="..\..\Strings.cs" />
     <Compile Include="..\..\UpdateCheck.cs" />

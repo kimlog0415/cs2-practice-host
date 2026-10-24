@@ -37,7 +37,9 @@ namespace CS2PracticeHost
         public static bool FetchMissing(IEnumerable<string> ids)
         {
             Load();
-            string[] missing = ids.Distinct().Where(id => !_known.ContainsKey(id)).ToArray();
+            // 그림 주소가 없는 것도 다시 묻는다 — 1.3.0이 적어 둔 것에는 그 칸이 없다
+            string[] missing = ids.Distinct()
+                .Where(id => !_known.ContainsKey(id) || _known[id].PreviewUrl == null).ToArray();
             if (missing.Length == 0) return false;
 
             bool gained = false;
@@ -101,6 +103,7 @@ namespace CS2PracticeHost
                     Title = d.Title,
                     Tags = d.Tags == null ? new string[0] : d.Tags.Where(t => t != null && t.Tag != null)
                                                                   .Select(t => t.Tag).ToArray(),
+                    PreviewUrl = d.PreviewUrl,
                 };
             }
         }
@@ -162,6 +165,9 @@ namespace CS2PracticeHost
         [DataMember(Name = "title")] public string Title { get; set; }
         [DataMember(Name = "tags")] public string[] Tags { get; set; }
 
+        /// <summary>제작자가 올린 대표 그림. 1.3.0까지는 안 받아서 그때 적어 둔 것에는 없다.</summary>
+        [DataMember(Name = "preview")] public string PreviewUrl { get; set; }
+
         public bool HasTag(string tag)
         {
             return Tags != null && Tags.Any(t => string.Equals(t, tag, StringComparison.OrdinalIgnoreCase));
@@ -195,6 +201,7 @@ namespace CS2PracticeHost
         [DataMember(Name = "result")] public int Result { get; set; }
         [DataMember(Name = "title")] public string Title { get; set; }
         [DataMember(Name = "tags")] public SteamTag[] Tags { get; set; }
+        [DataMember(Name = "preview_url")] public string PreviewUrl { get; set; }
     }
 
     [DataContract]
