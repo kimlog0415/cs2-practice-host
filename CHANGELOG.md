@@ -1,5 +1,17 @@
 # 변경 내역 / Changelog
 
+## 1.4.2 (2026-10-24)
+
+- 창작마당 맵으로 바꾸면 친구 목소리가 끊기는 CS2 버그와 되살리는 법을 안내합니다.
+- 이런 안내를 앱을 새로 내지 않고도 사용법 사이트에서 받아 와 보여 줍니다.
+
+---
+
+- Added a notice about the CS2 bug that breaks friends' voice chat when you change to a workshop map, and how to get it back.
+- Notices like this now come from the usage site, so they can be added without a new release.
+
+---
+
 ## 1.4.1 (2026-10-24)
 
 - 타일을 오른쪽 클릭하면 앱이 꺼지던 문제를 고쳤습니다.

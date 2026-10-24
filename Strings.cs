@@ -178,6 +178,12 @@ namespace CS2PracticeHost
             }
         }
 
+        /// <summary>사이트에서 받아 온 안내문 한 줄(<see cref="Notices"/>). 앱에 박힌 안내와 같은 모양으로 붙인다.</summary>
+        public static string NoticeLine(string text)
+        {
+            return T("\n※ " + text, "\n* " + text);
+        }
+
         /// <summary>
         /// 윙맨에 들어간 직후의 첫 changelevel은 모드를 못 바꾸고 맵만 바꾼다 — 두 번째부터 바뀐다(실기).
         /// cfg로 두 번째를 자동으로 거는 길은 못 찾았다. 맵을 불러올 때 읽는 cfg는 전부 맵이 뜨기 전에 돈다.

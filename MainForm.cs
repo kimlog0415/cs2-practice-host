@@ -18,6 +18,7 @@ namespace CS2PracticeHost
 
         private readonly Label _banner = new Label();
         private readonly Label _status = new Label();
+        private string _savedText;   // 상태 칸에 마지막으로 올린 「저장됐어요」 — 다른 글로 바뀌었는지 보려고
 
         // 고른 모드·맵은 보이지 않는 콤보 둘이 들고 있다. 위쪽 탭과 맵 타일은 그 값을 그리고 바꾸는 쪽이다 —
         // 저장·F10 파일·언어 전환이 전부 이 둘의 「몇 번째를 골랐나」로 짜여 있어서, 화면만 갈고 흐름은 그대로 둔다
@@ -85,7 +86,7 @@ namespace CS2PracticeHost
             Shown += (s, e) =>
             {
                 BeginInvoke((Action)SyncTileSelection);   // 타일 배치가 끝난 다음 차례에
-                RefreshStatus(); _watch.Start(); ShowUpdateIfAny(); LookUpWorkshopIfAny(); LoadBuiltInPictures();
+                RefreshStatus(); _watch.Start(); ShowUpdateIfAny(); FetchNotices(); LookUpWorkshopIfAny(); LoadBuiltInPictures();
             };
         }
 
@@ -880,7 +881,8 @@ namespace CS2PracticeHost
             string note = mode.BotsConfigurable ? OneSidedBotNote() : Strings.ModeBotsNote(mode.Key);
             if (map.IsWorkshop) note += Strings.WorkshopF10Note;
             if (mode.Key != "wingman" && Cs2Watcher.ServerIsInWingman()) note += Strings.WingmanLeaveF10Note;
-            _status.Text = Strings.Saved(mode.Name, map.Name, note);
+            note += Notices.For(mode.Key, map.IsWorkshop);
+            _status.Text = _savedText = Strings.Saved(mode.Name, map.Name, note);
         }
 
         /// <summary>
@@ -1148,6 +1150,17 @@ namespace CS2PracticeHost
             _updateVersions.Text = Strings.UpdateVersions(MyVersion, newer);
             _update.Visible = true;
             _update.BringToFront();
+        }
+
+        /// <summary>
+        /// 사이트의 안내문을 받아 온다. 달라졌고 상태 칸이 아직 「저장됐어요」 그대로면 다시 그린다 —
+        /// 서버가 열렸다는 알림 같은 다른 글을 덮으면 안 된다.
+        /// </summary>
+        private async void FetchNotices()
+        {
+            bool changed = await Task.Run(() => Notices.Fetch());
+            if (!changed || IsDisposed) return;
+            if (_status.Text == _savedText) SaveAll();
         }
 
         private static string MyVersion

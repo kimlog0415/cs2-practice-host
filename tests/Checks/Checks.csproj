@@ -25,6 +25,7 @@
     <Compile Include="..\..\GameData.cs" />
     <Compile Include="..\..\MainForm.cs" />
     <Compile Include="..\..\MapTiles.cs" />
+    <Compile Include="..\..\Notices.cs" />
     <Compile Include="..\..\Theme.cs" />
     <Compile Include="..\..\Settings.cs" />
     <Compile Include="..\..\Strings.cs" />
