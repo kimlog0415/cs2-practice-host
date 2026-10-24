@@ -646,6 +646,15 @@ namespace CS2PracticeHost
                 _tileArea.Controls.Add(tile);
             }
 
+            // 스크롤 범위가 마지막 줄 타일의 아래 여백·칸 안쪽 여백을 안 쳐서, 끝까지 내려도 맨 아랫줄 이름이
+            // 잘렸다(B 실기). 마지막 타일 뒤에서 줄을 끊고 빈 칸 하나를 둬 그만큼 더 내려가게 한다
+            MapTile last = _tileArea.Controls.OfType<MapTile>().LastOrDefault();
+            if (last != null)
+            {
+                _tileArea.SetFlowBreak(last, true);
+                _tileArea.Controls.Add(new Control { Size = new Size(1, _tileArea.Padding.Bottom + 2), Margin = new Padding(0) });
+            }
+
             _tileArea.AutoScrollPosition = new Point(0, 0);
             _tileArea.ResumeLayout();
             SyncKindTabs();
