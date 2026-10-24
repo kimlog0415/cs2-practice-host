@@ -22,6 +22,15 @@ CS2에서 파티로 친구를 모아 연습 게임을 시작하면, 방장만 �
 
 ## 쓰는 법
 
+### 받을 때 경고가 뜨면
+
+서명이 없는 프로그램이라 두 군데서 막힐 수 있습니다. 둘 다 흔한 일이고, 이렇게 넘어갑니다.
+
+1. 내려받을 때 — 브라우저가 「이 파일은 일반적으로 다운로드되지 않습니다」로 막으면, 내려받기 목록에서 그 항목의 `...` 메뉴 → 「유지」를 누릅니다.
+2. 처음 실행할 때 — 「Windows가 PC를 보호했습니다」 창이 뜨면 「추가 정보」 → 「실행」을 누릅니다.
+
+받은 파일이 올라온 것과 같은지 확인하려면 릴리스 페이지의 `CS2PracticeHost.exe.sha256` 값과 비교하세요. PowerShell에서 — `Get-FileHash .\CS2PracticeHost.exe`
+
 ### 방장
 
 1. 앱을 켜고 위쪽 탭에서 모드를, 왼쪽(기본 맵 / 창작마당)과 맵 그림으로 맵을, 아래에서 봇을 고릅니다.
@@ -45,7 +54,7 @@ CS2는 반드시 이 앱의 ▶ 버튼으로 켜 주세요. Steam에서 직접 �
 
 ## 이 앱이 하는 일과 하지 않는 일
 
-서명이 없는 프로그램이라 Windows가 경고를 띄웁니다(「추가 정보」 → 「실행」). 그래서 무엇을 하는지 밝혀 둡니다.
+서명이 없는 프로그램이라 Windows가 경고를 띄웁니다(넘어가는 방법은 위 「받을 때 경고가 뜨면」). 그래서 무엇을 하는지 밝혀 둡니다.
 
 하는 일
 
@@ -112,6 +121,8 @@ There is also a [video walkthrough](https://youtu.be/fWGAAhCcZOo) in Korean cove
 **What it does** — reads the Steam install path from the registry, writes config files into the CS2 cfg folder (marked as its own; never touches files it did not create), rebinds F10, launches Steam with arguments, reads `console.log` for the server address, copies that address to the clipboard (and says so when another program blocks it), stores settings in `%APPDATA%`, opens the [usage page](https://cs2.logstone.net/) in your browser from the `?` button, and asks GitHub for the latest version number at startup. To list your downloaded workshop maps it reads the Steam workshop folder (map names come from the vpk directory), and asks Steam for each map's title and tags — only the public workshop item id is sent, and the answer is cached in `%APPDATA%\CS2PracticeHost\workshop.json`. Map tile pictures are cached in `%APPDATA%\CS2PracticeHost\thumbs`: workshop previews come from Steam's image server, and built-in map pictures are read from your installed CS2 game files (`pak01`, read-only) — no game images ship inside the app.
 
 **What it does not do** — no game memory access, no input simulation, no game file modification, no automatic download or install. It sends no personal information: the version check, the workshop title lookup (item ids only) and the browser button are the only outside contacts.
+
+**If the download or the first run is blocked** — the app is unsigned, so you may be stopped twice. In your browser's download list, open the item's `...` menu and choose **Keep**. On first run, click **More info** → **Run anyway**. To check the file against what was published, compare `Get-FileHash .\CS2PracticeHost.exe` with the `CS2PracticeHost.exe.sha256` on the release page.
 
 Build with `dotnet build -c Release`. Targets .NET Framework 4.8 with no NuGet dependencies, so the output is a single exe.
 
