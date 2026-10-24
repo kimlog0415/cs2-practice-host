@@ -17,8 +17,7 @@ namespace CS2PracticeHost
     internal sealed class MapTile : Control
     {
         public const int TileWidth = 140;
-        public const int TileHeight = 103;
-        private const int PictureHeight = 79;
+        public const int TileHeight = 108;
 
         public readonly GameMap Map;
         private Image _picture;
@@ -33,6 +32,7 @@ namespace CS2PracticeHost
             Cursor = Cursors.Hand;
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer |
                      ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+            Theme.Round(this, 6);
             _picture = Thumbs.Of(map);
         }
 
@@ -57,44 +57,35 @@ namespace CS2PracticeHost
             Graphics g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            var box = new Rectangle(0, 0, Width - 1, Height - 1);
+            var box = new Rectangle(0, 0, Width, Height);
 
-            if (_picture != null) PaintPicture(g, box);
-            else PaintColor(g, box);
+            // 그림을 칸 가득 깔고 아래를 어둡게 덮어 이름을 그 위에 쓴다. 그림이 아직 없으면 맵마다 정한 색
+            if (_picture != null) g.DrawImage(_picture, Fit(_picture.Size, box));
+            else using (var back = new SolidBrush(ColorOf(Map.Id))) g.FillRectangle(back, box);
 
-            // 고른 칸은 굵은 테두리. 색만으로 가르면 색을 못 가리는 사람이 모른다
+            var shade = new Rectangle(0, Height - 46, Width, 46);
+            using (var fade = new LinearGradientBrush(shade, Color.FromArgb(0, Theme.Bottom), Color.FromArgb(235, Theme.Bottom),
+                                                      LinearGradientMode.Vertical))
+                g.FillRectangle(fade, shade);
+
+            using (var font = new Font(Strings.UiFont, 9, _selected ? FontStyle.Bold : FontStyle.Regular))
+                TextRenderer.DrawText(g, Map.TileName, font, new Rectangle(8, Height - 26, Width - 16, 22), Theme.Text,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis |
+                    TextFormatFlags.SingleLine);
+
+            // 고른 칸은 굵은 파란 테두리 + 체크. 색만으로 가르면 색을 못 가리는 사람이 모른다
             if (_selected)
-                using (var pen = new Pen(Color.FromArgb(25, 118, 210), 4)) g.DrawRectangle(pen, 2, 2, Width - 5, Height - 5);
-            else if (_hover)
-                using (var pen = new Pen(Color.FromArgb(120, 25, 118, 210), 2)) g.DrawRectangle(pen, box);
+            {
+                using (var ring = new Pen(Theme.Blue, 3)) g.DrawRectangle(ring, 1.5f, 1.5f, Width - 3, Height - 3);
+                using (var dot = new SolidBrush(Theme.Blue)) g.FillEllipse(dot, Width - 26, 6, 20, 20);
+                using (var tick = new Pen(Theme.Bottom, 2))
+                    g.DrawLines(tick, new[] { new Point(Width - 21, 16), new Point(Width - 18, 19), new Point(Width - 11, 12) });
+            }
             else
-                using (var pen = new Pen(Color.FromArgb(40, 0, 0, 0))) g.DrawRectangle(pen, box);
-        }
-
-        /// <summary>그림이 아직 없다(받는 중, 인터넷 없음, 게임 파일에 없는 맵) — 색으로 채우고 이름을 가운데.</summary>
-        private void PaintColor(Graphics g, Rectangle box)
-        {
-            using (var back = new SolidBrush(ColorOf(Map.Id))) g.FillRectangle(back, box);
-            DrawName(g, box, Color.White, FontStyle.Bold);
-        }
-
-        private void PaintPicture(Graphics g, Rectangle box)
-        {
-            g.FillRectangle(Brushes.White, box);
-            var picture = new Rectangle(0, 0, Width, PictureHeight);
-            g.SetClip(picture);
-            g.DrawImage(_picture, Fit(_picture.Size, picture));
-            g.ResetClip();
-
-            DrawName(g, new Rectangle(4, PictureHeight, Width - 8, Height - PictureHeight), Color.FromArgb(33, 37, 41), FontStyle.Regular);
-        }
-
-        private void DrawName(Graphics g, Rectangle area, Color color, FontStyle style)
-        {
-            using (var font = new Font(Strings.UiFont, 9, style))
-                TextRenderer.DrawText(g, Map.TileName, font, area, color,
-                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
-                    TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine);
+            {
+                using (var edge = new Pen(_hover ? Theme.BlueSoft : Theme.Line, _hover ? 2 : 1))
+                    g.DrawRectangle(edge, 0, 0, Width - 1, Height - 1);
+            }
         }
 
         /// <summary>그림 비율을 지킨 채 칸을 채운다(넘치는 쪽은 잘린다). 늘이면 맵이 찌그러져 보인다.</summary>

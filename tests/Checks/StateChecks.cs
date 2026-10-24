@@ -124,7 +124,7 @@ namespace CS2PracticeHost
             Report.Head("CS2가 꺼져 있을 때 (회색 띠)");
             KillDummies();
             Check(Cs2State.Off, "○  CS2 꺼져 있음 · 아래 ▶ 버튼으로 시작",
-                  Color.Gainsboro, "▶  CS2 켜고 서버 열기");
+                  Color.FromArgb(23, 41, 59), "▶  CS2 켜고 서버 열기");
         }
 
         private static void BannerNoLog()
@@ -133,7 +133,7 @@ namespace CS2PracticeHost
             KillDummies();
             Start("");   // -condebug 없음 = 앱이 켠 게 아니다
             Check(Cs2State.NoLog, "●  CS2 실행 중 · 주소를 읽으려면 ▶로 다시 켜기",
-                  Color.FromArgb(255, 243, 205), "▶  CS2 다시 켜고 서버 열기");
+                  Color.FromArgb(58, 44, 12), "▶  CS2 다시 켜고 서버 열기");
         }
 
         private static void BannerNoServer()
@@ -143,7 +143,7 @@ namespace CS2PracticeHost
             try { File.Delete(Cs2Paths.ConsoleLog); } catch (Exception) { }
             Start("-condebug");
             Check(Cs2State.NoServer, "●  CS2 실행 중 · 서버 없음 (메인 화면)",
-                  Color.FromArgb(209, 231, 248), "▶  CS2 다시 켜고 서버 열기");
+                  Theme.LinkFill, "▶  CS2 다시 켜고 서버 열기");
         }
 
         private static void BannerServerOpen()
@@ -161,7 +161,7 @@ namespace CS2PracticeHost
 
             Check(Cs2State.ServerOpen,
                   "●  서버 열림 (" + at.ToString("HH:mm", CultureInfo.InvariantCulture) + ") · 맵 안에서 F10",
-                  Color.FromArgb(212, 237, 218), "▶  CS2 다시 켜고 서버 열기");
+                  Color.FromArgb(19, 58, 38), "▶  CS2 다시 켜고 서버 열기");
 
             Cs2Status s = Cs2Watcher.Read();
             if (s.Server == null) { Report.Fail("서버 정보가 비었다"); return; }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Media;
@@ -102,62 +103,84 @@ namespace CS2PracticeHost
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); }
             catch (Exception) { }
 
-            _banner.Location = new Point(20, 14);
-            _banner.Size = new Size(648, 32);
-            _banner.TextAlign = ContentAlignment.MiddleLeft;
-            _banner.Padding = new Padding(8, 0, 0, 0);
-            _banner.Font = new Font(Strings.UiFont, 10, FontStyle.Bold);
-            Controls.Add(_banner);
+            // 바탕·머리 글씨는 OnPaintBackground가 그린다. 깜빡이지 않게 두 번 그리기를 켠다
+            BackColor = Theme.Bottom;
+            ForeColor = Theme.Text;
+            DoubleBuffered = true;
 
-            _lang.Location = new Point(672, 14);
-            _lang.Size = new Size(32, 32);
+            // 상태 띠 — 머리 오른쪽의 둥근 알약. 색은 상태마다 SetBanner가 정한다
+            _banner.Location = new Point(316, 12);
+            _banner.Size = new Size(344, 32);
+            _banner.TextAlign = ContentAlignment.MiddleLeft;
+            _banner.Padding = new Padding(12, 0, 0, 0);
+            _banner.Font = new Font(Strings.UiFont, 9.5f, FontStyle.Bold);
+            Controls.Add(_banner);
+            Theme.Round(_banner, 16);
+
+            _lang.Location = new Point(668, 12);
+            _lang.Size = new Size(36, 32);
             _lang.Font = new Font(Strings.UiFont, 9, FontStyle.Bold);
             _lang.TabStop = false;
             _lang.Click += OnLangClick;
+            Theme.Flat(_lang, Theme.Panel, Theme.Edge, Theme.Text);
             Controls.Add(_lang);
 
             _help.Text = "?";
-            _help.Location = new Point(708, 14);
+            _help.Location = new Point(708, 12);
             _help.Size = new Size(32, 32);
             _help.Font = new Font(Strings.UiFont, 11, FontStyle.Bold);
             _help.TabStop = false;
             _help.Click += OnHelpClick;
+            Theme.Flat(_help, Theme.Panel, Theme.Edge, Theme.Text);
             Controls.Add(_help);
 
             Controls.Add(_mode);
             Controls.Add(_map);
 
-            _tabs.Location = new Point(20, 56);
-            _tabs.Size = new Size(720, 36);
+            _tabs.Location = new Point(20, 57);
+            _tabs.Size = new Size(720, 42);
+            _tabs.BackColor = Color.Transparent;
             Controls.Add(_tabs);
 
             BuildTileArea();
 
-            int x = 20;
-            AddRow(_bots, 150, ref x);
-            AddRow(_level, 150, ref x);
-            AddRow(_team, 0, ref x);
+            int x = 128;
+            AddRow(_bots, ref x);
+            AddRow(_level, ref x);
+            AddRow(_team, ref x);
 
-            _status.Location = new Point(20, 452);
+            _status.Location = new Point(20, 444);
             _status.Size = new Size(720, 104);
-            _status.ForeColor = Color.DarkGreen;
+            _status.BackColor = Theme.Note;
+            _status.ForeColor = Theme.Text;
+            _status.Padding = new Padding(12, 8, 12, 8);
+            _status.Font = new Font(Strings.UiFont, 9.5f);
             Controls.Add(_status);
+            Theme.Round(_status, 8);
 
-            _launch.Location = new Point(20, 566);
-            _launch.Size = new Size(330, 52);
-            _launch.Font = new Font(Strings.UiFont, 11, FontStyle.Bold);
+            _launch.Location = new Point(20, 562);
+            _launch.Size = new Size(330, 56);
+            _launch.Font = new Font(Strings.UiFont, 12, FontStyle.Bold);
             _launch.Click += OnLaunchClick;
+            Theme.Flat(_launch, Theme.Gold, Theme.Gold, Theme.OnGold);
+            _launch.FlatAppearance.BorderSize = 0;
             Controls.Add(_launch);
+            Theme.Round(_launch, 8);
 
-            _copyLink.Location = new Point(360, 566);
-            _copyLink.Size = new Size(220, 52);
+            _copyLink.Location = new Point(360, 562);
+            _copyLink.Size = new Size(220, 56);
+            _copyLink.Font = new Font(Strings.UiFont, 10, FontStyle.Bold);
             _copyLink.Click += OnCopyLinkClick;
+            Theme.Flat(_copyLink, Theme.LinkFill, Theme.Blue, Theme.Text);
             Controls.Add(_copyLink);
+            Theme.Round(_copyLink, 8);
 
-            _copyAddress.Location = new Point(590, 566);
-            _copyAddress.Size = new Size(150, 52);
+            _copyAddress.Location = new Point(590, 562);
+            _copyAddress.Size = new Size(150, 56);
             _copyAddress.Click += OnCopyAddressClick;
+            Theme.Flat(_copyAddress, Theme.Panel, Theme.Edge, Theme.SubText);
             Controls.Add(_copyAddress);
+            Theme.Round(_copyAddress, 8);
 
             BuildUpdateOverlay();
 
@@ -173,7 +196,8 @@ namespace CS2PracticeHost
         {
             _update.Location = new Point(0, 0);
             _update.Size = ClientSize;
-            _update.BackColor = Color.White;
+            _update.BackColor = Theme.Bottom;
+            _update.ForeColor = Theme.Text;
             _update.Visible = false;
 
             SetUpdateFonts();
@@ -194,14 +218,21 @@ namespace CS2PracticeHost
             _updateHow.TextAlign = ContentAlignment.MiddleCenter;
             _update.Controls.Add(_updateHow);
 
-            _updateGet.Location = new Point(mid - 120, 360);
-            _updateGet.Size = new Size(240, 44);
-            _updateGet.Click += (s, e) => OpenInBrowser(SiteUrl);
-            _update.Controls.Add(_updateGet);
+            _updateVersions.ForeColor = Theme.Gold;
+            _updateHow.ForeColor = Theme.SubText;
 
-            _updateLater.Location = new Point(mid - 120, 416);
+            _updateGet.Location = new Point(mid - 120, 360);
+            _updateGet.Size = new Size(240, 48);
+            _updateGet.Click += (s, e) => OpenInBrowser(SiteUrl);
+            Theme.Flat(_updateGet, Theme.Gold, Theme.Gold, Theme.OnGold);
+            _update.Controls.Add(_updateGet);
+            Theme.Round(_updateGet, 8);
+
+            _updateLater.Location = new Point(mid - 120, 420);
             _updateLater.Size = new Size(240, 22);
             _updateLater.TextAlign = ContentAlignment.MiddleCenter;
+            _updateLater.LinkColor = Theme.BlueSoft;
+            _updateLater.ActiveLinkColor = Theme.Blue;
             _updateLater.LinkClicked += (s, e) => _update.Visible = false;
             _update.Controls.Add(_updateLater);
 
@@ -221,32 +252,32 @@ namespace CS2PracticeHost
         /// </summary>
         private void BuildTileArea()
         {
-            int y = 100;
+            int y = 112;
             foreach (RadioButton kind in new[] { _kindBuiltIn, _kindWorkshop })
             {
                 kind.Appearance = Appearance.Button;
                 kind.AutoCheck = false;
-                kind.FlatStyle = FlatStyle.Flat;
                 kind.TextAlign = ContentAlignment.MiddleCenter;
                 kind.Location = new Point(20, y);
-                kind.Size = new Size(96, 56);
+                kind.Size = new Size(96, 64);
                 kind.TabStop = false;
-                kind.FlatAppearance.CheckedBackColor = Color.FromArgb(25, 118, 210);
-                kind.FlatAppearance.BorderColor = Color.FromArgb(200, 204, 210);
+                Theme.Flat(kind, Theme.Panel, Theme.Edge, Theme.SubText);
                 Controls.Add(kind);
-                y += 60;
+                Theme.Round(kind, 8);
+                y += 72;
             }
             _kindBuiltIn.Click += (s, e) => ShowKind(false);
             _kindWorkshop.Click += (s, e) => ShowKind(true);
 
-            _tileArea.Location = new Point(124, 100);
-            _tileArea.Size = new Size(616, 300);
+            _tileArea.Location = new Point(128, 112);
+            _tileArea.Size = new Size(612, 262);
             _tileArea.FlowDirection = FlowDirection.LeftToRight;
             _tileArea.WrapContents = true;
             _tileArea.AutoScroll = true;
-            _tileArea.BackColor = Color.FromArgb(246, 247, 249);
-            _tileArea.Padding = new Padding(4);
+            _tileArea.BackColor = Theme.Well;
+            _tileArea.Padding = new Padding(5);
             Controls.Add(_tileArea);
+            Theme.Round(_tileArea, 8);
         }
 
         private void ShowKind(bool workshop)
@@ -258,20 +289,86 @@ namespace CS2PracticeHost
             SyncTileSelection();
         }
 
-        /// <summary>봇 칸 셋은 타일 아래 한 줄에 나란히. 마지막 칸은 남은 폭을 다 쓴다.</summary>
-        private void AddRow(ComboBox box, int width, ref int x)
+        /// <summary>봇 칸 셋은 타일 칸 아래 한 줄에 같은 폭으로. 이름은 칸 위에 작게.</summary>
+        private void AddRow(ComboBox box, ref int x)
         {
-            const int y = 412;
-            var text = new Label { Location = new Point(x, y + 4), AutoSize = true };
+            const int width = 196;
+            var text = new Label
+            {
+                Location = new Point(x, 386), AutoSize = true,
+                ForeColor = Theme.SubText, BackColor = Color.Transparent, Font = new Font(Strings.UiFont, 8.5f),
+            };
             Controls.Add(text);
             _rowLabels.Add(text);
 
             box.DropDownStyle = ComboBoxStyle.DropDownList;
-            box.Location = new Point(x + 74, y);
-            box.Width = width > 0 ? width : 740 - (x + 74);
+            box.FlatStyle = FlatStyle.Flat;
+            box.BackColor = Theme.Panel;
+            box.ForeColor = Theme.Text;
+            box.Location = new Point(x, 404);
+            box.Width = width;
             box.MaxDropDownItems = 16;
+            box.ItemHeight = 24;
+            // 윈도우 테마가 닫힌 콤보를 흰색으로 덮어서 직접 그린다 — 어두운 칸에 흰 상자만 떠 보였다
+            box.DrawMode = DrawMode.OwnerDrawFixed;
+            box.DrawItem += DrawComboItem;
             Controls.Add(box);
-            x += 74 + box.Width + 16;
+            x += width + 12;
+        }
+
+        private static void DrawComboItem(object sender, DrawItemEventArgs e)
+        {
+            var box = (ComboBox)sender;
+            bool hot = (e.State & DrawItemState.Selected) != 0 && (e.State & DrawItemState.ComboBoxEdit) == 0;
+            Color back = !box.Enabled ? Theme.Bottom : hot ? Theme.BlueFill : Theme.Panel;
+            using (var brush = new SolidBrush(back)) e.Graphics.FillRectangle(brush, e.Bounds);
+            if (e.Index < 0) return;
+            TextRenderer.DrawText(e.Graphics, box.Items[e.Index].ToString(), box.Font,
+                new Rectangle(e.Bounds.X + 6, e.Bounds.Y, e.Bounds.Width - 6, e.Bounds.Height),
+                box.Enabled ? Theme.Text : Theme.Dim, TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+        }
+
+        /// <summary>바탕 그라데이션과 머리(로고·이름·판) — 컨트롤로 두면 확인기의 칸 순서가 흐트러져 직접 그린다.</summary>
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            Graphics g = e.Graphics;
+            using (var back = new LinearGradientBrush(ClientRectangle, Theme.Top, Theme.Bottom, LinearGradientMode.Vertical))
+                g.FillRectangle(back, ClientRectangle);
+
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            using (var line = new Pen(Theme.Line))
+            {
+                g.DrawLine(line, 0, 56, ClientSize.Width, 56);
+                g.DrawLine(line, 0, 100, ClientSize.Width, 100);
+            }
+
+            // 아이콘과 같은 조준경 — 금 테두리, 파랑 가운데
+            using (var gold = new Pen(Theme.Gold, 2))
+            using (var blue = new SolidBrush(Theme.Blue))
+            {
+                g.DrawEllipse(gold, 23, 18, 20, 20);
+                g.FillEllipse(blue, 30, 25, 6, 6);
+                g.DrawLine(gold, 33, 14, 33, 20); g.DrawLine(gold, 33, 36, 33, 42);
+                g.DrawLine(gold, 19, 28, 25, 28); g.DrawLine(gold, 41, 28, 47, 28);
+            }
+
+            int titleEnd;
+            using (var title = new Font(Strings.UiFont, 13, FontStyle.Bold))
+            {
+                TextRenderer.DrawText(g, "CS2 PRACTICE HOST", title, new Point(54, 16), Theme.Text);
+                // 글꼴이 언어를 따라 바뀌어(맑은 고딕 / Segoe UI) 제목 폭이 달라진다. 판 번호는 제목 끝에 붙인다
+                titleEnd = 54 + TextRenderer.MeasureText(g, "CS2 PRACTICE HOST", title).Width;
+            }
+            using (var small = new Font(Strings.UiFont, 8))
+            {
+                var chip = new Rectangle(titleEnd + 4, 19, 44, 18);
+                using (GraphicsPath path = Theme.Rounded(chip, 4))
+                using (var edge = new Pen(Theme.Edge))
+                    g.DrawPath(edge, path);
+                TextRenderer.DrawText(g, MyVersion, small, chip, Theme.SubText,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            }
         }
 
         /// <summary>고른 값과 무관하게 늘 같은 자리에 있는 문구.</summary>
@@ -422,13 +519,21 @@ namespace CS2PracticeHost
                     Appearance = Appearance.Button,
                     AutoCheck = false,              // 고른 것은 _mode가 정한다. 눌렀다고 먼저 바뀌면 둘이 어긋난다
                     TextAlign = ContentAlignment.MiddleCenter,
-                    FlatStyle = FlatStyle.Flat,
                     Location = new Point(i * (width + 4), 0),
                     Size = new Size(width, _tabs.Height),
                     TabStop = false,
                 };
-                tab.FlatAppearance.CheckedBackColor = Color.FromArgb(25, 118, 210);
-                tab.FlatAppearance.BorderColor = Color.FromArgb(200, 204, 210);
+                // CS2 메뉴 탭처럼 상자 없이 글자와 밑줄만. 고른 탭은 금색 글자 + 금색 밑줄
+                Theme.Flat(tab, Color.FromArgb(18, 36, 55), Color.FromArgb(18, 36, 55), Theme.SubText);
+                tab.FlatAppearance.BorderSize = 0;
+                tab.FlatAppearance.CheckedBackColor = tab.BackColor;
+                tab.Paint += (s, e) =>
+                {
+                    var t = (RadioButton)s;
+                    if (!t.Checked) return;
+                    using (var under = new SolidBrush(Theme.Gold))
+                        e.Graphics.FillRectangle(under, 6, t.Height - 3, t.Width - 12, 3);
+                };
                 tab.Click += (s, e) => OnTabClick(index);
                 _tabs.Controls.Add(tab);
             }
@@ -447,8 +552,8 @@ namespace CS2PracticeHost
             {
                 var tab = (RadioButton)_tabs.Controls[i];
                 tab.Checked = i == _mode.SelectedIndex;
-                tab.ForeColor = tab.Checked ? Color.White : SystemColors.ControlText;
-                tab.Font = new Font(Strings.UiFont, 10, tab.Checked ? FontStyle.Bold : FontStyle.Regular);
+                tab.ForeColor = tab.Checked ? Theme.Gold : Theme.SubText;
+                tab.Font = new Font(Strings.UiFont, 10.5f, tab.Checked ? FontStyle.Bold : FontStyle.Regular);
             }
         }
 
@@ -484,7 +589,10 @@ namespace CS2PracticeHost
             foreach (RadioButton kind in new[] { _kindBuiltIn, _kindWorkshop })
             {
                 kind.Checked = (kind == _kindWorkshop) == _showWorkshop;
-                kind.ForeColor = kind.Checked ? Color.White : SystemColors.ControlText;
+                kind.BackColor = kind.Checked ? Theme.BlueFill : Theme.Panel;
+                kind.FlatAppearance.CheckedBackColor = Theme.BlueFill;
+                kind.FlatAppearance.BorderColor = kind.Checked ? Theme.Blue : Theme.Edge;
+                kind.ForeColor = kind.Checked ? Theme.Text : Theme.SubText;
                 kind.Font = new Font(Strings.UiFont, 10, kind.Checked ? FontStyle.Bold : FontStyle.Regular);
             }
         }
@@ -642,16 +750,16 @@ namespace CS2PracticeHost
             switch (status.State)
             {
                 case Cs2State.Off:
-                    SetBanner(Color.Gainsboro, Color.DimGray, Strings.BannerOff);
+                    SetBanner(Color.FromArgb(23, 41, 59), Color.FromArgb(180, 195, 210), Strings.BannerOff);
                     break;
                 case Cs2State.NoLog:
-                    SetBanner(Color.FromArgb(255, 243, 205), Color.DarkGoldenrod, Strings.BannerNoLog);
+                    SetBanner(Color.FromArgb(58, 44, 12), Color.FromArgb(255, 211, 120), Strings.BannerNoLog);
                     break;
                 case Cs2State.NoServer:
-                    SetBanner(Color.FromArgb(209, 231, 248), Color.SteelBlue, Strings.BannerNoServer);
+                    SetBanner(Theme.LinkFill, Theme.BlueSoft, Strings.BannerNoServer);
                     break;
                 case Cs2State.ServerOpen:
-                    SetBanner(Color.FromArgb(212, 237, 218), Color.DarkGreen,
+                    SetBanner(Color.FromArgb(19, 58, 38), Color.FromArgb(169, 240, 191),
                         Strings.BannerServerOpen(status.Server.OpenedAt.ToString("HH:mm")));
                     NoticeNewServer(status.Server);
                     return;

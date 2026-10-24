@@ -65,7 +65,7 @@ namespace CS2PracticeHost
 
         public static string Launch { get { return T("▶  CS2 켜고 서버 열기", "▶  Launch CS2 and open server"); } }
         public static string Relaunch { get { return T("▶  CS2 다시 켜고 서버 열기", "▶  Relaunch CS2 and open server"); } }
-        public static string CopyLink { get { return T("참가 링크 복사 (친구에게 보내기)", "Copy join link (send to a friend)"); } }
+        public static string CopyLink { get { return T("참가 링크 복사\n(친구에게 보내기)", "Copy join link\n(send to a friend)"); } }
         public static string CopyAddress { get { return T("콘솔용 주소 복사", "Copy console address"); } }
 
         // ---------- 새 판 알림 (덮는 판) ----------
