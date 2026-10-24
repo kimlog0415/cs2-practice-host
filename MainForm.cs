@@ -397,8 +397,10 @@ namespace CS2PracticeHost
                 box.Enabled = mode.BotsConfigurable;
 
             CfgWriter.WriteMatchCfgs(mode, map);
+            // 잠긴 칸의 값을 쓰면 안 된다 — 탈환은 gamemode_casual_server.cfg도 읽어서
+            // 그 값이 모드 규칙을 덮는다(봇이 1명만 나왔다). 0번(기본)이면 파일을 지운다
             CfgWriter.WriteBotCfgs(
-                _bots.SelectedIndex,
+                mode.BotsConfigurable ? _bots.SelectedIndex : 0,
                 GameData.BotLevels[_level.SelectedIndex].Value,
                 GameData.BotTeams[_team.SelectedIndex].Value);
 

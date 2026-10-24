@@ -124,6 +124,33 @@ namespace CS2PracticeHost
                       "※ 러시는 봇을 게임이 정해요 (3대3, 빈자리를 채워요)");
             Report.Is("탈환 안내", Strings.ModeBotsNote("retake").Trim(),
                       "※ 탈환은 봇을 게임이 정해요 (수비 테러리스트 봇)");
+
+            LockedBotsLeaveNoCfg();
+        }
+
+        /// <summary>
+        /// 잠긴 칸의 값이 파일로 새면 안 된다. 탈환은 gamemode_casual_server.cfg도 읽어서,
+        /// 직전에 캐주얼·윙맨에서 고른 봇 수가 모드 규칙을 덮었다(2026-10-24 실기, 봇 1명).
+        /// </summary>
+        private static void LockedBotsLeaveNoCfg()
+        {
+            Report.Head("봇을 모드가 정하는 곳을 고르면 봇 설정 파일이 남지 않나");
+
+            Fake.Install();
+            Strings.Init("ko");
+            Fake.WriteSettings("{\"mode\":\"casual\",\"map\":\"de_dust2\",\"bots\":2," +
+                               "\"level\":\"0\",\"team\":\"t\",\"installDir\":null,\"lang\":\"ko\"}");
+            using (new MainForm(Settings.Load())) { }
+            Report.Is("캐주얼에선 파일이 생기나", File.Exists(CfgPath("gamemode_casual_server")), true);
+
+            foreach (string key in new[] { "retake", "rush" })
+            {
+                string map = key == "rush" ? "rush_001" : "de_dust2";
+                Fake.WriteSettings("{\"mode\":\"" + key + "\",\"map\":\"" + map + "\",\"bots\":2," +
+                                   "\"level\":\"0\",\"team\":\"t\",\"installDir\":null,\"lang\":\"ko\"}");
+                using (new MainForm(Settings.Load())) { }
+                Report.Is(key + " — 캐주얼 봇 파일이 지워졌나", File.Exists(CfgPath("gamemode_casual_server")), false);
+            }
         }
 
         /// <summary>새 모드도 보이는 이름이 아니라 키로 되살아나야 한다.</summary>
