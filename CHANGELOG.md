@@ -1,5 +1,19 @@
 # 변경 내역 / Changelog
 
+## 1.4.1 (2026-10-24)
+
+- 타일을 오른쪽 클릭하면 앱이 꺼지던 문제를 고쳤습니다.
+- 오른쪽 클릭으로 즐겨찾기 별이 바뀌던 문제를 고쳤습니다.
+- 앱은 하나만 켜집니다. 이미 켜져 있으면 그 창이 앞으로 옵니다.
+
+---
+
+- Fixed the app closing when you right-click a tile.
+- Fixed right-clicking toggling a tile's favorite star.
+- Only one copy of the app runs at a time. Opening it again brings the existing window to the front.
+
+---
+
 ## 1.4.0 (2026-10-24)
 
 - 맵을 그림 타일로 고릅니다. 모드는 위쪽 탭에서, 기본 맵과 창작마당은 왼쪽 탭에서 나눠 봅니다.

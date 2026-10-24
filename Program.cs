@@ -1,6 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace CS2PracticeHost
@@ -28,8 +31,34 @@ namespace CS2PracticeHost
             Application.ThreadException += (s, e) => ReportCrash(e.Exception);
             AppDomain.CurrentDomain.UnhandledException += (s, e) => ReportCrash(e.ExceptionObject as Exception);
 
-            try { Start(); }
-            catch (Exception ex) { ReportCrash(ex); }
+            // 둘이 동시에 뜨면 각자 들고 있는 설정으로 번갈아 저장해, 나중에 저장한 쪽이
+            // 다른 쪽에서 단 즐겨찾기·종류 표시를 덮는다(2026-10-24 디렉터 결정). 두 번째는 첫 창을 앞으로 부르고 끝낸다
+            bool first;
+            using (var single = new Mutex(true, @"Local\CS2PracticeHost", out first))
+            {
+                if (!first) { BringExistingToFront(); return; }
+
+                try { Start(); }
+                catch (Exception ex) { ReportCrash(ex); }
+
+                GC.KeepAlive(single);
+            }
+        }
+
+        [DllImport("user32.dll")] private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr hWnd);
+        private const int SwRestore = 9;
+
+        private static void BringExistingToFront()
+        {
+            Process me = Process.GetCurrentProcess();
+            foreach (Process other in Process.GetProcessesByName(me.ProcessName))
+            {
+                if (other.Id == me.Id || other.MainWindowHandle == IntPtr.Zero) continue;
+                ShowWindow(other.MainWindowHandle, SwRestore);
+                SetForegroundWindow(other.MainWindowHandle);
+                return;
+            }
         }
 
         private static void Start()
