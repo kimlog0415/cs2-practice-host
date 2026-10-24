@@ -79,6 +79,18 @@ namespace CS2PracticeHost
             Report.Is("Shortdust", Maps("777"), "de_shortdust");
             Report.Is("Bikinibottom", Maps("666"), "de_bikini");
             Report.Is("하나만 남으면 맵 이름을 안 덧붙이나", ById("777").OneOfSeveral, false);
+
+            // 실제 구독(de_rats_room)의 꼴 — 폴더 이름(rats_addon)이 어느 맵과도 안 맞고, 제작자가 남긴 test가 같이 들었다
+            Report.Is("폴더 이름이 안 맞으면 제목과 같은 맵만 (rats)",
+                      string.Join(", ", WorkshopMaps.PlayableOf(new[] { "de_rats_room", "test" }, "rats_addon", "de_rats_room")),
+                      "de_rats_room");
+            // Labbo — 하늘 상자가 `_3dskybox`이고, 제목 「Labbo」에 접두사가 붙어 `de_labbo`다
+            Report.Is("_3dskybox도 빠지고 제목+접두사로 고르나 (labbo)",
+                      string.Join(", ", WorkshopMaps.PlayableOf(new[] { "labbo_3dskybox", "de_labbo" }, "reflex", "Labbo")),
+                      "de_labbo");
+            Report.Is("제목과도 안 맞으면 다 둔다",
+                      string.Join(", ", WorkshopMaps.PlayableOf(new[] { "aim_a", "aim_b" }, "aim_pack", "Aim Pack")),
+                      "aim_a, aim_b");
         }
 
         private static void TwoMapsInOneItem()

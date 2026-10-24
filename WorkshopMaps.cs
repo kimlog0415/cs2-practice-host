@@ -34,7 +34,8 @@ namespace CS2PracticeHost
                     if (!long.TryParse(id, out ignored)) continue;
 
                     // 이름을 못 읽은 맵은 띄우지 않는다 — 고를 수 있는데 안 열리는 게 제일 나쁘다
-                    string[] names = PlayableOf(MapNamesIn(TreeFile(dir, id)), SourceFolder(dir));
+                    string[] names = PlayableOf(MapNamesIn(TreeFile(dir, id)),
+                                                PublishData(dir, "source_folder"), PublishData(dir, "title"));
                     foreach (string name in names)
                         found.Add(GameMap.Workshop(id, name, names.Length > 1));
                 }
@@ -49,28 +50,47 @@ namespace CS2PracticeHost
         /// `maps/` 바로 아래 vpk가 다 고를 맵은 아니다. 하늘 상자(`de_bikinibottom_skybox`)나
         /// 본 맵이 끌어다 쓰는 작은 맵(Shortdust의 `dust1`)도 같은 자리에 있다. 그걸 고르면 빈 하늘에 선다.
         /// `_skybox`는 이름으로 빼고, 그래도 여럿이면 제작자가 올린 폴더 이름과 맞는 쪽만 남긴다
-        /// (`shortdust` → `de_shortdust`). 맞는 게 없으면 진짜 맵이 여럿 든 묶음으로 보고 다 둔다.
+        /// (`shortdust` → `de_shortdust`). 폴더 이름이 어느 쪽과도 안 맞으면 올린 제목과 같은 이름만 남긴다
+        /// (`rats_addon` 안의 `de_rats_room`과 제작자가 남긴 `test` — `test`는 안 열린다).
+        /// 그것도 없으면 진짜 맵이 여럿 든 묶음으로 보고 다 둔다.
         /// </summary>
-        internal static string[] PlayableOf(string[] names, string sourceFolder)
+        internal static string[] PlayableOf(string[] names, string sourceFolder, string title = null)
         {
-            string[] maps = names.Where(n => !n.EndsWith("_skybox", StringComparison.OrdinalIgnoreCase)).ToArray();
-            if (maps.Length <= 1 || string.IsNullOrEmpty(sourceFolder)) return maps;
+            // Labbo는 하늘 상자를 `labbo_3dskybox`로 싣는다
+            string[] maps = names.Where(n => !n.EndsWith("_skybox", StringComparison.OrdinalIgnoreCase) &&
+                                             !n.EndsWith("_3dskybox", StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (maps.Length <= 1) return maps;
 
-            string[] main = maps.Where(n => string.Equals(n, sourceFolder, StringComparison.OrdinalIgnoreCase) ||
-                                            n.EndsWith("_" + sourceFolder, StringComparison.OrdinalIgnoreCase))
-                                .ToArray();
-            return main.Length > 0 ? main : maps;
+            string[] main = NamedLike(maps, sourceFolder);
+            if (main.Length > 0) return main;
+
+            // 제목도 폴더 이름처럼 접두사를 붙여 맵 이름이 된다 — 「Labbo」 → `de_labbo`
+            string[] titled = NamedLike(maps, title);
+            return titled.Length > 0 ? titled : maps;
         }
 
-        /// <summary>Steam이 받은 폴더에 같이 두는 `publish_data.txt`의 `source_folder` — 제작자의 작업 폴더 이름이다.</summary>
-        private static string SourceFolder(string dir)
+        /// <summary>`이름` 그대로이거나 `접두사_이름`인 맵 (`shortdust` → `de_shortdust`).</summary>
+        private static string[] NamedLike(string[] maps, string name)
+        {
+            if (string.IsNullOrEmpty(name)) return new string[0];
+            name = name.Trim();
+            return maps.Where(n => string.Equals(n, name, StringComparison.OrdinalIgnoreCase) ||
+                                   n.EndsWith("_" + name, StringComparison.OrdinalIgnoreCase))
+                       .ToArray();
+        }
+
+        /// <summary>
+        /// Steam이 받은 폴더에 같이 두는 `publish_data.txt`의 한 칸.
+        /// `source_folder`는 제작자의 작업 폴더 이름, `title`은 올린 제목이다.
+        /// </summary>
+        private static string PublishData(string dir, string key)
         {
             try
             {
                 foreach (string line in File.ReadLines(Path.Combine(dir, "publish_data.txt")))
                 {
                     string[] parts = line.Split('"');   // 	"source_folder"		"shortdust"
-                    if (parts.Length >= 4 && parts[1] == "source_folder") return parts[3];
+                    if (parts.Length >= 4 && parts[1] == key) return parts[3];
                 }
             }
             catch (IOException) { }
