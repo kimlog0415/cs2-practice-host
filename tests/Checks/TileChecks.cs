@@ -26,6 +26,9 @@ namespace CS2PracticeHost
             TabClickSwitchesMode();
             WorkshopHeaderHidesWhenEmpty();
             PictureShowsWhenSaved();
+            StarPutsMapFirst();
+            KindMarks();
+            TabsHaveTips();
 
             Fake.ClearWorkshopMaps();
             Fake.ForgetWorkshopInfo();
@@ -155,6 +158,83 @@ namespace CS2PracticeHost
         }
 
         /// <summary>받아 둔 그림이 있으면 타일에 붙는다. 바깥 요청 없이 보려고 그림 파일을 미리 놓는다.</summary>
+        private static object Call(Form form, string method, params object[] args)
+        {
+            return typeof(MainForm).GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(form, args);
+        }
+
+        /// <summary>
+        /// 별은 타일 고르기와 따로 눌린다. 별 자리를 누르면 그 맵이 칸 맨 앞으로 가고 고른 맵은 안 바뀐다.
+        /// 별 자리가 아닌 곳을 누르면 평소처럼 고른다.
+        /// </summary>
+        private static void StarPutsMapFirst()
+        {
+            Report.Head("별을 누르면 그 맵이 맨 앞으로 — 고르기와 따로");
+
+            using (MainForm form = Open("casual", "de_dust2"))
+            {
+                MapTile nuke = Tiles(form).First(t => t.Map.Id == "de_nuke");
+                Report.Is("처음엔 맨 앞이 아니다", Tiles(form)[0].Map.Id != "de_nuke", true);
+
+                // 별 자리(오른쪽 위)를 누른 것처럼
+                typeof(MapTile).GetField("_pressedAt", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(nuke, new Point(nuke.Width - 15, 15));
+                Click(nuke);
+
+                Report.Is("맨 앞", Tiles(form)[0].Map.Id, "de_nuke");
+                Report.Is("별이 찼나", Tiles(form)[0].Favorite, true);
+                Report.Is("고른 맵은 그대로", Peek.Combo(form, "_map"), "더스트2");
+                Report.Is("설정에 남았나", string.Join(",", Settings.Load().Favorites ?? new string[0]), "de_nuke");
+
+                // 별이 아닌 곳은 고르기
+                MapTile again = Tiles(form)[0];
+                typeof(MapTile).GetField("_pressedAt", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(again, new Point(20, 60));
+                Click(again);
+                Report.Is("가운데를 누르면 고른다", Peek.Combo(form, "_map"), "뉴크");
+
+                Call(form, "ToggleFavorite", "de_nuke");
+                Report.Is("한 번 더 누르면 풀린다", Settings.Load().Favorites.Length, 0);
+            }
+        }
+
+        /// <summary>오른쪽 클릭으로 단 종류는 진하게, 안 단 맵은 이름 앞부분으로 짐작해 흐리게.</summary>
+        private static void KindMarks()
+        {
+            Report.Head("맵 종류 딱지 — 직접 단 것과 짐작한 것");
+
+            using (MainForm form = Open("casual", "de_dust2"))
+            {
+                MapTile dust = Tiles(form).First(t => t.Map.Id == "de_dust2");
+                Report.Is("de_ → 폭탄 짐작", dust.Kind + "/" + dust.KindGuessed, "bomb/True");
+
+                Call(form, "SetMapKind", "de_dust2", MapKind.Bomb2);
+                dust = Tiles(form).First(t => t.Map.Id == "de_dust2");
+                Report.Is("직접 단 것", dust.Kind + "/" + dust.KindGuessed, "bomb2/False");
+                Report.Is("설정에 남았나", Settings.Load().KindOf("de_dust2"), "bomb2");
+
+                Call(form, "SetMapKind", "de_dust2", null);
+                Report.Is("지우면 짐작으로", Tiles(form).First(t => t.Map.Id == "de_dust2").Kind, "bomb");
+
+                ShowWorkshop(form);
+                MapTile botz = Tiles(form).First(t => t.Map.WorkshopId == "3070596071");
+                Report.Is("앞부분 없는 창작마당 맵(aim_botz)은 딱지 없음", botz.Kind == null, true);
+            }
+        }
+
+        private static void TabsHaveTips()
+        {
+            Report.Head("모드 탭에 설명이 붙나");
+
+            using (MainForm form = Open("casual", "de_dust2"))
+            {
+                var tips = Peek.Field<ToolTip>(form, "_tips");
+                foreach (RadioButton tab in Tabs(form))
+                    if (string.IsNullOrEmpty(tips.GetToolTip(tab))) Report.Fail("설명 없는 탭: " + tab.Text);
+                Report.Is("러시", tips.GetToolTip(Tabs(form).First(t => t.Text == "러시")), "3대3 짧은 경기. 빈자리는 봇이 채운다");
+            }
+        }
+
         private static void PictureShowsWhenSaved()
         {
             Report.Head("받아 둔 그림이 타일에 붙나 (창작마당·기본 맵)");

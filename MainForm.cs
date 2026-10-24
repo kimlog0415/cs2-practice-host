@@ -554,9 +554,11 @@ namespace CS2PracticeHost
         private void FillMaps(string wantedId)
         {
             // 받아 둔 창작마당 맵은 제작자가 단 태그로 걸러 그 모드에 맞는 것만 붙인다
+            // 별 찍은 맵이 각 칸 맨 앞에, 나머지는 원래 순서(디렉터 선택). OrderBy는 같은 값끼리 순서를 지킨다
             _maps = SelectedMode.Maps
                 .Where(m => File.Exists(Path.Combine(Cs2Paths.MapsDir, m.Id + ".vpk")))
                 .Concat(WorkshopMaps.For(SelectedMode))
+                .OrderBy(m => _settings.IsFavorite(m.Id) ? 0 : 1)
                 .ToArray();
 
             _map.Items.Clear();
@@ -608,6 +610,7 @@ namespace CS2PracticeHost
                         e.Graphics.FillRectangle(under, 6, t.Height - 3, t.Width - 12, 3);
                 };
                 tab.Click += (s, e) => OnTabClick(index);
+                _tips.SetToolTip(tab, Strings.ModeTip(GameData.Modes[i].Key));
                 _tabs.Controls.Add(tab);
             }
             SyncTabs();
@@ -641,8 +644,11 @@ namespace CS2PracticeHost
             {
                 if (_maps[i].IsWorkshop != _showWorkshop) continue;
                 int index = i;
-                var tile = new MapTile(_maps[i]);
+                var tile = new MapTile(_maps[i]) { Favorite = _settings.IsFavorite(_maps[i].Id) };
+                ApplyKind(tile);
                 tile.Click += (s, e) => _map.SelectedIndex = index;
+                tile.StarClicked += (s, e) => ToggleFavorite(((MapTile)s).Map.Id);
+                tile.MouseUp += (s, e) => { if (e.Button == MouseButtons.Right) ShowKindMenu((MapTile)s, e.Location); };
                 _tileArea.Controls.Add(tile);
             }
 
@@ -677,6 +683,74 @@ namespace CS2PracticeHost
                 kind.ForeColor = kind.Checked ? Theme.Text : Theme.SubText;
                 kind.Font = new Font(Strings.UiFont, 10, kind.Checked ? FontStyle.Bold : FontStyle.Regular);
             }
+        }
+
+        // ---------- 즐겨찾기 별 · 맵 종류 딱지 ----------
+
+        /// <summary>사용자가 단 종류가 있으면 진하게, 없으면 이름 앞부분으로 짐작해 흐리게.</summary>
+        private void ApplyKind(MapTile tile)
+        {
+            string chosen = _settings.KindOf(tile.Map.Id);
+            if (chosen != null) tile.SetKind(chosen, false);
+            else tile.SetKind(MapKind.Guess(tile.Map), true);
+        }
+
+        /// <summary>별을 찍으면 그 맵이 칸 맨 앞으로 간다. 보던 칸·고른 맵은 그대로.</summary>
+        private void ToggleFavorite(string mapId)
+        {
+            _settings.ToggleFavorite(mapId);
+            _settings.Save();
+            RefillKeepingView();
+        }
+
+        private void RefillKeepingView()
+        {
+            GameMap keep = SelectedMap;
+            bool viewing = _showWorkshop;
+            bool wasLoading = _loading;
+            _loading = true;
+            FillMaps(keep != null ? keep.Id : null);
+            _loading = wasLoading;
+            if (viewing != _showWorkshop) ShowKind(viewing);
+        }
+
+        private ContextMenuStrip _kindMenu;
+
+        /// <summary>오른쪽 클릭 — 맵 종류를 직접 단다. 지금 단 것에 체크.</summary>
+        private void ShowKindMenu(MapTile tile, Point at)
+        {
+            if (_kindMenu != null) _kindMenu.Dispose();
+            _kindMenu = new ContextMenuStrip { ShowImageMargin = false, ShowCheckMargin = true };
+            _kindMenu.BackColor = Theme.Panel;
+            _kindMenu.ForeColor = Theme.Text;
+
+            string chosen = _settings.KindOf(tile.Map.Id);
+            string id = tile.Map.Id;
+            AddKindItem(MapKind.Bomb1, Strings.MarkBomb1, id, chosen);
+            AddKindItem(MapKind.Bomb2, Strings.MarkBomb2, id, chosen);
+            AddKindItem(MapKind.Hostage, Strings.MarkHostage, id, chosen);
+            AddKindItem(MapKind.Other, Strings.MarkOther, id, chosen);
+            _kindMenu.Items.Add(new ToolStripSeparator());
+            var clear = new ToolStripMenuItem(Strings.MarkClear) { Enabled = chosen != null, ForeColor = Theme.Text };
+            clear.Click += (s, e) => SetMapKind(id, null);
+            _kindMenu.Items.Add(clear);
+
+            _kindMenu.Show(tile, at);
+        }
+
+        private void AddKindItem(string kind, string text, string mapId, string chosen)
+        {
+            var item = new ToolStripMenuItem(text) { Checked = kind == chosen, ForeColor = Theme.Text };
+            item.Click += (s, e) => SetMapKind(mapId, kind);
+            _kindMenu.Items.Add(item);
+        }
+
+        /// <summary>kind가 null이면 표시를 지운다(다시 짐작으로 돌아간다).</summary>
+        private void SetMapKind(string mapId, string kind)
+        {
+            _settings.SetKind(mapId, kind);
+            _settings.Save();
+            foreach (MapTile tile in Tiles.Where(t => t.Map.Id == mapId)) ApplyKind(tile);
         }
 
         private IEnumerable<MapTile> Tiles

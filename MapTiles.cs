@@ -23,6 +23,46 @@ namespace CS2PracticeHost
         private Image _picture;
         private bool _selected;
         private bool _hover;
+        private bool _favorite;
+        private string _kind;
+        private bool _kindGuessed;
+        private Point _pressedAt;
+
+        /// <summary>오른쪽 위 별을 눌렀다. 별은 타일 고르기와 따로 눌린다 — 별을 눌러도 그 맵이 골라지지 않는다.</summary>
+        public event EventHandler StarClicked;
+
+        private Rectangle StarBox { get { return new Rectangle(Width - 30, 4, 26, 26); } }
+
+        public bool Favorite
+        {
+            get { return _favorite; }
+            set { if (_favorite != value) { _favorite = value; Invalidate(); } }
+        }
+
+        /// <summary>
+        /// 맵 종류 딱지. kind는 MapKind 값(없으면 null). guessed면 사용자가 단 게 아니라 이름 앞부분으로 짐작한 것 — 흐리게 그린다.
+        /// </summary>
+        public void SetKind(string kind, bool guessed)
+        {
+            _kind = kind;
+            _kindGuessed = guessed;
+            Invalidate();
+        }
+
+        public string Kind { get { return _kind; } }
+        public bool KindGuessed { get { return _kindGuessed; } }
+
+        protected override void OnMouseDown(MouseEventArgs e) { _pressedAt = e.Location; base.OnMouseDown(e); }
+
+        protected override void OnClick(EventArgs e)
+        {
+            if (StarBox.Contains(_pressedAt))
+            {
+                if (StarClicked != null) StarClicked(this, EventArgs.Empty);
+                return;   // 별만 누른 것 — 고르기(Click)로 넘기지 않는다
+            }
+            base.OnClick(e);
+        }
 
         public MapTile(GameMap map)
         {
@@ -68,23 +108,83 @@ namespace CS2PracticeHost
                                                       LinearGradientMode.Vertical))
                 g.FillRectangle(fade, shade);
 
+            // 왼쪽 아래 종류 딱지, 그 뒤에 이름
+            int nameX = 8;
+            if (_kind != null) nameX += DrawKind(g, new Point(8, Height - 24)) + 5;
             using (var font = new Font(Strings.UiFont, 9, _selected ? FontStyle.Bold : FontStyle.Regular))
-                TextRenderer.DrawText(g, Map.TileName, font, new Rectangle(8, Height - 26, Width - 16, 22), Theme.Text,
+                TextRenderer.DrawText(g, Map.TileName, font, new Rectangle(nameX, Height - 26, Width - nameX - 8, 22), Theme.Text,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis |
                     TextFormatFlags.SingleLine);
 
-            // 고른 칸은 굵은 파란 테두리 + 체크. 색만으로 가르면 색을 못 가리는 사람이 모른다
+            DrawStar(g);
+
+            // 고른 칸은 굵은 파란 테두리(오른쪽 위는 별 자리라 체크는 없다). 굵기가 달라 색을 못 가려도 보인다
             if (_selected)
-            {
                 using (var ring = new Pen(Theme.Blue, 3)) g.DrawRectangle(ring, 1.5f, 1.5f, Width - 3, Height - 3);
-                using (var dot = new SolidBrush(Theme.Blue)) g.FillEllipse(dot, Width - 26, 6, 20, 20);
-                using (var tick = new Pen(Theme.Bottom, 2))
-                    g.DrawLines(tick, new[] { new Point(Width - 21, 16), new Point(Width - 18, 19), new Point(Width - 11, 12) });
-            }
             else
             {
                 using (var edge = new Pen(_hover ? Theme.BlueSoft : Theme.Line, _hover ? 2 : 1))
                     g.DrawRectangle(edge, 0, 0, Width - 1, Height - 1);
+            }
+        }
+
+        /// <summary>
+        /// 별. 빈 별은 마우스를 올린 타일에만 또렷하게, 평소엔 흐리게 — 그림을 가리지 않게.
+        /// 그림이 밝아도 보이게 어두운 동그라미를 깔고 그린다.
+        /// </summary>
+        private void DrawStar(Graphics g)
+        {
+            Rectangle box = StarBox;
+            if (!_favorite && !_hover) { DrawStarShape(g, box, Color.FromArgb(150, Theme.Text), false, 90); return; }
+            DrawStarShape(g, box, _favorite ? Theme.Gold : Theme.Text, _favorite, 170);
+        }
+
+        private static void DrawStarShape(Graphics g, Rectangle box, Color color, bool filled, int backAlpha)
+        {
+            using (var back = new SolidBrush(Color.FromArgb(backAlpha, Theme.Bottom))) g.FillEllipse(back, box);
+            float cx = box.X + box.Width / 2f, cy = box.Y + box.Height / 2f + 0.5f, outer = 8.5f, inner = 3.6f;
+            var points = new PointF[10];
+            for (int i = 0; i < 10; i++)
+            {
+                double angle = -Math.PI / 2 + i * Math.PI / 5;
+                float r = i % 2 == 0 ? outer : inner;
+                points[i] = new PointF(cx + (float)(Math.Cos(angle) * r), cy + (float)(Math.Sin(angle) * r));
+            }
+            if (filled) using (var fill = new SolidBrush(color)) g.FillPolygon(fill, points);
+            else using (var line = new Pen(color, 1.4f)) g.DrawPolygon(line, points);
+        }
+
+        /// <summary>
+        /// 종류 딱지 — 폭탄은 폭탄 모양 + 지점 수(1·2, 짐작이면 숫자 없음), 인질은 사람 모양, 기타는 점 셋.
+        /// 짐작한 것은 흐리게. Valve 그림은 쓰지 않고 직접 그린다. 돌려주는 값은 그린 폭.
+        /// </summary>
+        private int DrawKind(Graphics g, Point at)
+        {
+            int alpha = _kindGuessed ? 120 : 255;
+            Color ink = Color.FromArgb(alpha, _kind == MapKind.Hostage ? Theme.BlueSoft : Theme.Gold);
+            var icon = new Rectangle(at.X, at.Y, 16, 16);
+            using (var pen = new Pen(ink, 1.6f))
+            using (var fill = new SolidBrush(ink))
+            {
+                if (MapKind.IsBomb(_kind))
+                {
+                    g.FillEllipse(fill, icon.X + 1, icon.Y + 4, 11, 11);                       // 몸통
+                    g.DrawLine(pen, icon.X + 9, icon.Y + 5, icon.X + 12, icon.Y + 1);          // 심지
+                    g.FillEllipse(fill, icon.X + 11, icon.Y - 1, 4, 4);                        // 불꽃
+                    string sites = _kind == MapKind.Bomb1 ? "1" : _kind == MapKind.Bomb2 ? "2" : null;
+                    if (sites == null) return 16;
+                    using (var font = new Font(Strings.UiFont, 8, FontStyle.Bold))
+                        TextRenderer.DrawText(g, sites, font, new Point(icon.Right, icon.Y + 1), ink);
+                    return 24;
+                }
+                if (_kind == MapKind.Hostage)
+                {
+                    g.FillEllipse(fill, icon.X + 5, icon.Y + 1, 6, 6);                         // 머리
+                    g.FillPie(fill, icon.X + 2, icon.Y + 8, 12, 14, 180, 180);                 // 어깨
+                    return 16;
+                }
+                for (int i = 0; i < 3; i++) g.FillEllipse(fill, icon.X + 1 + i * 5, icon.Y + 7, 3, 3);   // 기타
+                return 16;
             }
         }
 
@@ -109,6 +209,35 @@ namespace CS2PracticeHost
             int sum = 0;
             foreach (char c in id) sum = (sum * 31 + c) & 0x7FFFFFFF;
             return Palette[sum % Palette.Length];
+        }
+    }
+
+    /// <summary>
+    /// 맵 종류 딱지의 값. 설정 파일에 이 글자 그대로 남는다 — 바꾸면 사용자가 단 표시가 사라진다.
+    /// Steam 정보엔 이런 칸이 없고 맵 파일 안의 폭탄 지점도 압축돼 못 읽어서, 사람이 단다(2026-10-24 디렉터 결정).
+    /// </summary>
+    internal static class MapKind
+    {
+        public const string Bomb1 = "bomb1";
+        public const string Bomb2 = "bomb2";
+        public const string Hostage = "hostage";
+        public const string Other = "other";
+
+        /// <summary>짐작으로만 쓰는 값 — 폭탄 맵인 건 알지만 지점 수는 모른다.</summary>
+        public const string Bomb = "bomb";
+
+        public static bool IsBomb(string kind) { return kind == Bomb || kind == Bomb1 || kind == Bomb2; }
+
+        /// <summary>
+        /// 표시를 안 단 맵은 이름 앞부분으로 짐작한다 — `de_`는 폭탄, `cs_`는 인질. 관례일 뿐이라
+        /// 앞부분이 없는 창작마당 맵(`panama`·`prestige` 같은)은 짐작하지 않는다.
+        /// </summary>
+        public static string Guess(GameMap map)
+        {
+            string name = (map.IsWorkshop ? map.WorkshopMapName : map.Id) ?? "";
+            if (name.StartsWith("de_", StringComparison.OrdinalIgnoreCase)) return Bomb;
+            if (name.StartsWith("cs_", StringComparison.OrdinalIgnoreCase)) return Hostage;
+            return null;
         }
     }
 

@@ -36,6 +36,36 @@ namespace CS2PracticeHost
 
         public static string KindBuiltIn { get { return T("기본 맵", "Built-in"); } }
         public static string KindWorkshop { get { return T("창작마당", "Workshop"); } }
+
+        // 타일 오른쪽 클릭 — 맵 종류는 사람이 단다
+        public static string MarkBomb1 { get { return T("폭탄 · 지점 1곳", "Bomb · 1 site"); } }
+        public static string MarkBomb2 { get { return T("폭탄 · 지점 2곳", "Bomb · 2 sites"); } }
+        public static string MarkHostage { get { return T("인질", "Hostage"); } }
+        public static string MarkOther { get { return T("기타", "Other"); } }
+        public static string MarkClear { get { return T("표시 지우기", "Clear"); } }
+
+        /// <summary>모드 탭에 마우스를 올리면 뜨는 설명(디렉터 요청). 숫자는 틀리기 쉬워 넣지 않는다.</summary>
+        public static string ModeTip(string modeKey)
+        {
+            switch (modeKey)
+            {
+                case "casual": return T("가볍게 하는 폭탄·인질전. 팀원 피해가 없고 장비를 넉넉히 준다",
+                                        "Relaxed bomb/hostage matches. No team damage, generous equipment");
+                case "competitive": return T("5대5 정식 규칙. 돈 관리·팀원 피해가 있다",
+                                             "5v5 with full rules — economy and team damage");
+                case "wingman": return T("2대2, 작은 맵에서 폭탄 지점 하나로 짧게",
+                                         "2v2 on a small map with one bombsite");
+                case "rush": return T("3대3 짧은 경기. 빈자리는 봇이 채운다",
+                                      "Short 3v3 matches; bots fill empty slots");
+                case "deathmatch": return T("죽어도 바로 다시 살아난다. 킬 점수로 겨룬다",
+                                            "Respawn instantly; compete on kills");
+                case "armsrace": return T("킬할 때마다 다음 무기로 바뀐다. 마지막 무기로 먼저 킬하면 이긴다",
+                                          "Each kill moves you to the next weapon; first kill with the last one wins");
+                case "retake": return T("폭탄이 이미 설치된 자리에서 대테러가 되찾는다. 테러리스트는 봇이 지킨다",
+                                        "CTs retake a site where the bomb is already planted; bots defend as T");
+                default: return null;
+            }
+        }
         public static string RowBots { get { return T("봇 수", "Bots"); } }
         public static string RowLevel { get { return T("봇 난이도", "Difficulty"); } }
         public static string RowTeam { get { return T("봇 팀", "Bot team"); } }
