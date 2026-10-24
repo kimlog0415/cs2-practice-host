@@ -648,7 +648,7 @@ namespace CS2PracticeHost
                 ApplyKind(tile);
                 tile.Click += (s, e) => _map.SelectedIndex = index;
                 tile.StarClicked += (s, e) => ToggleFavorite(((MapTile)s).Map.Id);
-                tile.MouseUp += (s, e) => { if (e.Button == MouseButtons.Right) ShowKindMenu((MapTile)s, e.Location); };
+                tile.MouseUp += (s, e) => { if (e.Button == MouseButtons.Right && !((MapTile)s).IsDisposed) ShowKindMenu((MapTile)s, e.Location); };
                 _tileArea.Controls.Add(tile);
             }
 

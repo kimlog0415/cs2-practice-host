@@ -72,6 +72,7 @@ namespace CS2PracticeHost
 
         public static Settings Load()
         {
+            if (!File.Exists(FilePath)) return new Settings();
             try
             {
                 using (var stream = File.OpenRead(FilePath))
@@ -79,17 +80,30 @@ namespace CS2PracticeHost
             }
             catch (Exception)
             {
-                return new Settings();   // 없거나 깨졌으면 기본값으로 시작
+                // 깨진 파일은 다음 저장에서 덮인다. 즐겨찾기·종류 표시처럼 사람이 쌓은 것이 말없이
+                // 사라지지 않게, 기본값으로 시작하기 전에 따로 떼어 둔다(껐다 켜니 표시가 사라졌다 — B 실기)
+                try { File.Copy(FilePath, BrokenPath(), true); } catch (Exception) { }
+                return new Settings();
             }
+        }
+
+        private static string BrokenPath()
+        {
+            return Path.Combine(Path.GetDirectoryName(FilePath),
+                                "settings.broken-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".json");
         }
 
         public void Save()
         {
             try
             {
+                // 비우고 쓰는 사이에 끊기면(끄기·강제 종료) 파일이 깨진다 — 다 쓴 임시 파일로 바꿔치기한다
                 Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
-                using (var stream = File.Create(FilePath))
+                string temp = FilePath + ".tmp";
+                using (var stream = File.Create(temp))
                     Serializer.WriteObject(stream, this);
+                if (File.Exists(FilePath)) File.Replace(temp, FilePath, null);
+                else File.Move(temp, FilePath);
             }
             catch (Exception)
             {

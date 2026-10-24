@@ -29,6 +29,7 @@ namespace CS2PracticeHost
             StarPutsMapFirst();
             KindMarks();
             TabsHaveTips();
+            BrokenSettingsKept();
 
             Fake.ClearWorkshopMaps();
             Fake.ForgetWorkshopInfo();
@@ -112,6 +113,7 @@ namespace CS2PracticeHost
             {
                 ShowWorkshop(form);
                 MapTile botz = Tiles(form).First(t => t.Map.WorkshopId == "3070596071");
+                Press(botz, new Point(20, 60), MouseButtons.Left);
                 Click(botz);
 
                 Report.Is("고른 맵", Peek.Combo(form, "_map"), "창작마당 · Aim Botz");
@@ -177,8 +179,7 @@ namespace CS2PracticeHost
                 Report.Is("처음엔 맨 앞이 아니다", Tiles(form)[0].Map.Id != "de_nuke", true);
 
                 // 별 자리(오른쪽 위)를 누른 것처럼
-                typeof(MapTile).GetField("_pressedAt", BindingFlags.Instance | BindingFlags.NonPublic)
-                    .SetValue(nuke, new Point(nuke.Width - 15, 15));
+                Press(nuke, new Point(nuke.Width - 15, 15), MouseButtons.Left);
                 Click(nuke);
 
                 Report.Is("맨 앞", Tiles(form)[0].Map.Id, "de_nuke");
@@ -188,14 +189,70 @@ namespace CS2PracticeHost
 
                 // 별이 아닌 곳은 고르기
                 MapTile again = Tiles(form)[0];
-                typeof(MapTile).GetField("_pressedAt", BindingFlags.Instance | BindingFlags.NonPublic)
-                    .SetValue(again, new Point(20, 60));
+                Press(again, new Point(20, 60), MouseButtons.Left);
                 Click(again);
                 Report.Is("가운데를 누르면 고른다", Peek.Combo(form, "_map"), "뉴크");
 
                 Call(form, "ToggleFavorite", "de_nuke");
                 Report.Is("한 번 더 누르면 풀린다", Settings.Load().Favorites.Length, 0);
             }
+
+            RightClickOnlyOpensMenu();
+        }
+
+        private static void Press(MapTile tile, Point at, MouseButtons button)
+        {
+            typeof(MapTile).GetField("_pressedAt", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(tile, at);
+            typeof(MapTile).GetField("_pressedButton", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(tile, button);
+        }
+
+        /// <summary>
+        /// Control의 Click은 오른쪽 버튼에도 온다. 오른쪽 클릭이 별 칸에 닿으면 별이 토글되고 타일을 다시 그려,
+        /// 이어서 뜨는 종류 메뉴가 지워진 타일에 뜨다 앱이 죽었다(ObjectDisposedException, 2026-10-24 B 실기).
+        /// </summary>
+        private static void RightClickOnlyOpensMenu()
+        {
+            Report.Head("오른쪽 클릭은 별도 고르기도 안 건드리나");
+
+            using (MainForm form = Open("casual", "de_dust2"))
+            {
+                MapTile nuke = Tiles(form).First(t => t.Map.Id == "de_nuke");
+                Press(nuke, new Point(nuke.Width - 15, 15), MouseButtons.Right);
+                Click(nuke);
+                Report.Is("별 칸 오른쪽 클릭 — 별 그대로", Settings.Load().Favorites == null || Settings.Load().Favorites.Length == 0, true);
+                Report.Is("타일이 안 지워졌나", nuke.IsDisposed, false);
+
+                Press(nuke, new Point(20, 60), MouseButtons.Right);
+                Click(nuke);
+                Report.Is("가운데 오른쪽 클릭 — 고른 맵 그대로", Peek.Combo(form, "_map"), "더스트2");
+            }
+        }
+
+        /// <summary>
+        /// 껐다 켜니 종류 표시가 다 사라졌다(2026-10-24). 깨진 설정은 기본값으로 시작하되,
+        /// 다음 저장이 덮기 전에 따로 떼어 둬야 사람이 쌓은 것을 되살릴 수 있다.
+        /// </summary>
+        private static void BrokenSettingsKept()
+        {
+            Report.Head("깨진 설정 파일은 따로 남기고, 저장은 바꿔치기로");
+
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                                       "CS2PracticeHost", "settings.json");
+            string dir = Path.GetDirectoryName(path);
+            foreach (string old in Directory.GetFiles(dir, "settings.broken-*.json")) File.Delete(old);
+
+            File.WriteAllText(path, "{\"mode\":\"casual\",\"mapKinds\":[\"de_dust2=bomb2\"");   // 쓰다 끊긴 꼴
+            Settings loaded = Settings.Load();
+            Report.Is("기본값으로 시작하나", loaded.KindOf("de_dust2") == null, true);
+            string[] kept = Directory.GetFiles(dir, "settings.broken-*.json");
+            Report.Is("깨진 파일을 떼어 뒀나", kept.Length, 1);
+            Report.Is("떼어 둔 파일에 표시가 남았나", kept.Length == 1 && File.ReadAllText(kept[0]).Contains("de_dust2=bomb2"), true);
+            foreach (string old in kept) File.Delete(old);
+
+            loaded.SetKind("de_dust2", "bomb1");
+            loaded.Save();
+            Report.Is("저장 뒤 다시 읽히나", Settings.Load().KindOf("de_dust2"), "bomb1");
+            Report.Is("임시 파일이 안 남았나", File.Exists(path + ".tmp"), false);
         }
 
         /// <summary>오른쪽 클릭으로 단 종류는 진하게, 안 단 맵은 이름 앞부분으로 짐작해 흐리게.</summary>

@@ -27,6 +27,7 @@ namespace CS2PracticeHost
         private string _kind;
         private bool _kindGuessed;
         private Point _pressedAt;
+        private MouseButtons _pressedButton;
 
         /// <summary>오른쪽 위 별을 눌렀다. 별은 타일 고르기와 따로 눌린다 — 별을 눌러도 그 맵이 골라지지 않는다.</summary>
         public event EventHandler StarClicked;
@@ -52,10 +53,19 @@ namespace CS2PracticeHost
         public string Kind { get { return _kind; } }
         public bool KindGuessed { get { return _kindGuessed; } }
 
-        protected override void OnMouseDown(MouseEventArgs e) { _pressedAt = e.Location; base.OnMouseDown(e); }
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            _pressedAt = e.Location;
+            _pressedButton = e.Button;
+            base.OnMouseDown(e);
+        }
 
         protected override void OnClick(EventArgs e)
         {
+            // Control의 Click은 오른쪽 버튼에도 온다. 오른쪽 클릭이 별 칸에 닿으면 별이 토글되고, 그 바람에
+            // 타일을 다시 그려 오른쪽 클릭 메뉴가 지워진 타일에 뜨다 앱이 죽었다(B 실기). 오른쪽은 메뉴만 쓴다
+            if (_pressedButton != MouseButtons.Left) return;
+
             if (StarBox.Contains(_pressedAt))
             {
                 if (StarClicked != null) StarClicked(this, EventArgs.Empty);
