@@ -174,6 +174,18 @@
 
 <h2>쓰는 법</h2>
 
+<h3>받을 때 경고가 뜨면</h3>
+
+<p>서명이 없는 프로그램이라 두 군데서 막힐 수 있습니다. 둘 다 흔한 일이고, 아래처럼 넘어갑니다.</p>
+
+<ul>
+  <li><strong>Microsoft Edge에서 내려받을 때</strong> — 오른쪽 위 내려받기 아이콘을 눌러 목록을 엽니다. 막힌 항목에 <strong>마우스를 올리면</strong> 점 세 개 메뉴가 나타나고, 거기서 「유지」를 고릅니다. 한 번 더 물어보면 유지하는 쪽을 고르면 됩니다. 메뉴가 마우스를 올려야 보이고 묻는 창이 두 번 나와서 제일 헷갈리는 자리입니다.</li>
+  <li><strong>Chrome에서 내려받을 때</strong> — 내려받기 알림에서 항목 옆 메뉴를 누르고 「계속」 또는 「유지」를 고릅니다.</li>
+  <li><strong>처음 실행할 때</strong> — 「Windows가 PC를 보호했습니다」 창이 뜨면 「추가 정보」를 누른 뒤 「실행」을 누릅니다.</li>
+</ul>
+
+<p>받은 파일이 올라온 것과 같은지 확인하려면 릴리스 페이지의 <code>CS2PracticeHost.exe.sha256</code> 값과 비교하세요. PowerShell에서 <code>Get-FileHash .\CS2PracticeHost.exe</code> 입니다.</p>
+
 <div class="cols">
   <div>
     <h3>방장</h3>
@@ -277,6 +289,18 @@
 <p>The symptom, the cause, and how to fix it by hand in the console are also <a href="https://youtu.be/fWGAAhCcZOo">explained in a video</a>. It is in Korean, but the console commands and log lines on screen are the same in any language.</p>
 
 <h2>How to use it</h2>
+
+<h3>If the download or the first run is blocked</h3>
+
+<p>The app is unsigned, so you may be stopped twice. Both are common; here is how to get past them.</p>
+
+<ul>
+  <li><strong>Downloading in Microsoft Edge</strong> — open the downloads list from the icon at the top right. <strong>Hover</strong> the blocked item to reveal its three-dot menu, then choose <em>Keep</em>. If it asks once more, choose to keep it. This is the most confusing one: the menu only appears on hover, and it asks twice.</li>
+  <li><strong>Downloading in Chrome</strong> — open the menu next to the item in the download notice and choose <em>Continue</em> or <em>Keep</em>.</li>
+  <li><strong>First run</strong> — when "Windows protected your PC" appears, click <em>More info</em>, then <em>Run anyway</em>.</li>
+</ul>
+
+<p>To check the file against what was published, compare <code>Get-FileHash .\CS2PracticeHost.exe</code> with the <code>CS2PracticeHost.exe.sha256</code> on the release page.</p>
 
 <div class="cols">
   <div>
