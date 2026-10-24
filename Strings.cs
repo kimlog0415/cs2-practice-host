@@ -148,6 +148,20 @@ namespace CS2PracticeHost
             }
         }
 
+        /// <summary>
+        /// 윙맨에 들어간 직후의 첫 changelevel은 모드를 못 바꾸고 맵만 바꾼다 — 두 번째부터 바뀐다(실기).
+        /// cfg로 두 번째를 자동으로 거는 길은 못 찾았다. 맵을 불러올 때 읽는 cfg는 전부 맵이 뜨기 전에 돈다.
+        /// </summary>
+        public static string WingmanLeaveF10Note
+        {
+            get
+            {
+                // 연달아 누르면 두 번째가 로딩 중에 묻힌다(실기) — 맵이 뜬 뒤라고 못박는다
+                return T("\n※ 윙맨에서 다른 모드로 갈 땐 F10을 누르고, 맵이 뜬 뒤 한 번 더 눌러요 — 첫 번째는 맵만 바뀌어요",
+                         "\n* Leaving Wingman for another mode: press F10, then again after the map loads — the first press only changes the map");
+            }
+        }
+
         public static string RetakeBotsNote
         {
             get

@@ -33,6 +33,25 @@ namespace CS2PracticeHost
         private static readonly Regex ServerIdLine = new Regex(@"ServerSteamID=(\[A:[^\]]+\])");
         private static readonly Regex ShutdownLine = new Regex(
             @"Server shutting down: NETWORK_DISCONNECT_(DISCONNECT_BY_USER|REQUEST_HOSTSTATE_IDLE)");
+        private static readonly Regex GameTypeLine = new Regex(@"c_game_type int\( (\d+) ");
+        private static readonly Regex GameModeLine = new Regex(@"c_game_mode int\( (\d+) ");
+
+        /// <summary>
+        /// 서버가 지금 도는 모드. 맵을 불러올 때마다 서버가 찍는 값이라, F10이 실제로 먹었는지는
+        /// 앱 설정이 아니라 이걸로 안다. <paramref name="since"/> 이후 기록이 없으면 false.
+        /// </summary>
+        public static bool CurrentGameMode(DateTime since, out int type, out int mode)
+        {
+            type = mode = -1;
+            foreach (string line in ReadLines())
+            {
+                Match t = GameTypeLine.Match(line);
+                if (t.Success && ParseTime(line) >= since) type = int.Parse(t.Groups[1].Value);
+                Match m = GameModeLine.Match(line);
+                if (m.Success && ParseTime(line) >= since) mode = int.Parse(m.Groups[1].Value);
+            }
+            return type >= 0 && mode >= 0;
+        }
 
         /// <summary>
         /// 지금 열려 있는 서버. 이미 닫혔거나 <paramref name="since"/> 이전 기록이면 null.

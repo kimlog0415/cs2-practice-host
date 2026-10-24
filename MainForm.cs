@@ -795,6 +795,7 @@ namespace CS2PracticeHost
 
             string note = mode.BotsConfigurable ? OneSidedBotNote() : Strings.ModeBotsNote(mode.Key);
             if (map.IsWorkshop) note += Strings.WorkshopF10Note;
+            if (mode.Key != "wingman" && Cs2Watcher.ServerIsInWingman()) note += Strings.WingmanLeaveF10Note;
             _status.Text = Strings.Saved(mode.Name, map.Name, note);
         }
 

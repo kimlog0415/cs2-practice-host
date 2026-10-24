@@ -1,3 +1,5 @@
+using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -126,6 +128,37 @@ namespace CS2PracticeHost
                       "※ 탈환은 봇을 게임이 정해요 (수비 테러리스트 봇)");
 
             LockedBotsLeaveNoCfg();
+            ServerModeFromLog();
+        }
+
+        /// <summary>
+        /// 「윙맨에서 F10 두 번」 안내는 앱 설정이 아니라 서버가 찍은 지금 모드로 판단한다.
+        /// 데스매치도 game_mode가 2라서 type까지 같이 읽어야 한다.
+        /// </summary>
+        private static void ServerModeFromLog()
+        {
+            Report.Head("로그에서 서버의 지금 모드를 읽나");
+
+            Fake.Install();
+            DateTime at = DateTime.Now;
+            string t1 = at.ToString("MM/dd HH:mm:ss", CultureInfo.InvariantCulture);
+            string t2 = at.AddSeconds(5).ToString("MM/dd HH:mm:ss", CultureInfo.InvariantCulture);
+            File.WriteAllText(Cs2Paths.ConsoleLog,
+                t1 + " [Server]       c_game_type int( 0 = 0x0 )\r\n" +
+                t1 + " [Server]       c_game_mode int( 2 = 0x2 )\r\n");
+
+            int type, mode;
+            Report.Is("읽혔나", ConsoleLog.CurrentGameMode(at.AddSeconds(-5), out type, out mode), true);
+            Report.Is("윙맨", type + "/" + mode, "0/2");
+
+            File.AppendAllText(Cs2Paths.ConsoleLog,
+                t2 + " [Server]       c_game_type int( 1 = 0x1 )\r\n" +
+                t2 + " [Server]       c_game_mode int( 2 = 0x2 )\r\n");
+            ConsoleLog.CurrentGameMode(at.AddSeconds(-5), out type, out mode);
+            Report.Is("마지막 값을 쓰나 (데스매치)", type + "/" + mode, "1/2");
+
+            Report.Is("시작 전 기록은 안 쓰나",
+                      ConsoleLog.CurrentGameMode(at.AddMinutes(1), out type, out mode), false);
         }
 
         /// <summary>

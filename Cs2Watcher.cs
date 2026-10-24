@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 
 namespace CS2PracticeHost
 {
@@ -41,6 +42,25 @@ namespace CS2PracticeHost
             return server == null
                 ? new Cs2Status { State = Cs2State.NoServer }
                 : new Cs2Status { State = Cs2State.ServerOpen, Server = server };
+        }
+
+        /// <summary>
+        /// 서버가 지금 윙맨인가. 윙맨에 들어간 직후의 첫 changelevel은 모드를 못 바꾸고 맵만 바꾼다
+        /// (두 번째부터 바뀐다, 2026-10-24 실기). 그 자리에서만 「F10 두 번」을 안내하려고 본다.
+        /// </summary>
+        public static bool ServerIsInWingman()
+        {
+            Process cs2 = Cs2Process.Find();
+            if (cs2 == null || !Cs2Process.HasCondebug(cs2)) return false;
+
+            GameMode wingman = GameData.Modes.First(m => m.Key == "wingman");
+            int type, mode;
+            try
+            {
+                return ConsoleLog.CurrentGameMode(cs2.StartTime.AddSeconds(-5), out type, out mode)
+                    && type == wingman.Type && mode == wingman.Mode;
+            }
+            catch (Exception) { return false; }
         }
 
         /// <summary>이번 CS2 세션에서 열린 서버만 인정한다. 로그는 껐다 켜도 남아 죽은 주소를 집게 된다.</summary>
