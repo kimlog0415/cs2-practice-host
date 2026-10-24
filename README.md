@@ -24,7 +24,7 @@ CS2에서 파티로 친구를 모아 연습 게임을 시작하면, 방장만 �
 
 ### 방장
 
-1. 앱을 켜고 모드·맵·봇을 고릅니다.
+1. 앱을 켜고 위쪽 탭에서 모드를, 왼쪽(기본 맵 / 창작마당)과 맵 그림으로 맵을, 아래에서 봇을 고릅니다.
 2. ▶ 버튼을 누릅니다. CS2가 켜지면서 서버가 열립니다.
 3. 서버가 열리면 참가 링크가 자동으로 복사됩니다. 친구에게 보내세요.
 4. 게임 안에서 F10을 누르면 맵·모드를 바꿉니다. 들어와 있는 친구들은 그대로 남습니다.
@@ -103,7 +103,7 @@ This tool skips the lobby. It opens the server first, then hands you a link to s
 
 There is also a [video walkthrough](https://youtu.be/fWGAAhCcZOo) in Korean covering the symptom, the cause, and the manual fix.
 
-**Host** — pick mode, map and bots, press ▶. CS2 launches and the server opens. A join link is copied automatically. Press F10 in game to change map or mode; connected friends stay in. Always launch CS2 with the ▶ button — if you start it from Steam directly, the app cannot read the server address.
+**Host** — pick a mode from the top tabs, a map by its picture (Built-in / Workshop on the left), and bots below, then press ▶. CS2 launches and the server opens. A join link is copied automatically. Press F10 in game to change map or mode; connected friends stay in. Always launch CS2 with the ▶ button — if you start it from Steam directly, the app cannot read the server address.
 
 **Friends** — click the link, then "게임 접속하기" on the page that opens. Nothing to install, no developer console.
 

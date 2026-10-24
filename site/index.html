@@ -174,7 +174,7 @@
   <div>
     <h3>방장</h3>
     <ol>
-      <li>앱을 켜고 모드·맵·봇을 고릅니다. 고르는 즉시 저장됩니다.</li>
+      <li>앱을 켜고 위쪽 탭에서 <strong>모드</strong>를 고릅니다. 왼쪽에서 <strong>기본 맵 / 창작마당</strong>을 고른 뒤 <strong>맵 그림</strong>을 누르고, 아래에서 봇을 정합니다. 고르는 즉시 저장됩니다.</li>
       <li><strong>▶ 버튼</strong>을 누릅니다. CS2가 켜지면서 서버가 열립니다.</li>
       <li>서버가 열리면 <strong>참가 링크가 자동으로 복사</strong>됩니다. 친구에게 보내세요.</li>
       <li>게임 안에서 <strong>F10</strong>을 누르면 맵·모드를 바꿉니다. 들어와 있는 친구들은 그대로 남습니다.</li>
@@ -193,7 +193,7 @@
 
 <div class="card">
   <p><strong>CS2는 반드시 앱의 ▶ 버튼으로 켜 주세요.</strong></p>
-  <p>Steam에서 직접 켜면 앱이 서버 주소를 읽지 못합니다. 주소를 읽는 데 필요한 설정이 앱이 켤 때만 붙기 때문입니다. 이 상태가 되면 앱 위쪽 띠가 노란색으로 바뀌어 알려 줍니다.</p>
+  <p>Steam에서 직접 켜면 앱이 서버 주소를 읽지 못합니다. 주소를 읽는 데 필요한 설정이 앱이 켤 때만 붙기 때문입니다. 이 상태가 되면 앱 오른쪽 위 상태 표시가 노란색으로 바뀌어 알려 줍니다.</p>
 </div>
 
 <h2>알아두실 것</h2>
@@ -202,7 +202,8 @@
   <li><strong>방장이 메뉴로 나가면 서버가 닫힙니다.</strong> 친구들도 모두 끊깁니다. 서버가 방장의 게임 안에서 돌기 때문입니다. 맵이나 모드를 바꿀 때는 게임에서 나가지 말고 F10을 쓰세요.</li>
   <li><strong>봇을 한쪽 팀으로만 몰면 「사람 수 + 2」에서 멈춥니다.</strong> 한 팀이 상대보다 2명 넘게 많아질 수 없다는 게임 규칙 때문입니다. 고른 수만큼 다 넣으려면 봇 팀을 「양쪽에 섞기」로 두세요.</li>
   <li><strong>봇 설정은 맵을 새로 열 때 반영됩니다.</strong> 게임 도중에 바꾸면 그 판에는 변화가 없습니다. F10으로 맵을 바꾸면 새 설정으로 들어옵니다.</li>
-  <li><strong>받아 두신 창작마당 맵도 고를 수 있습니다.</strong> F10으로도 바뀝니다. 그 맵이 없는 친구는 받겠냐는 창에서 받기를 누르면 한 번 나가서 받는데, 다 받은 뒤 같은 링크로 다시 들어오면 됩니다.</li>
+  <li><strong>받아 두신 창작마당 맵도 고를 수 있습니다.</strong> 왼쪽 「창작마당」에 그 모드에 맞는 맵만 나옵니다. F10으로도 바뀝니다. 그 맵이 없는 친구는 받겠냐는 창에서 받기를 누르면 한 번 나가서 받는데, 다 받은 뒤 같은 링크로 다시 들어오면 됩니다.</li>
+  <li><strong>앱을 켜 둔 채 Steam에서 새로 구독한 맵은</strong> 앱 창으로 돌아오면 목록에 나타납니다.</li>
   <li><strong>주소를 아는 사람은 누구나 들어올 수 있습니다.</strong> 공개된 곳에 올리지 말고 친구에게만 보내세요.</li>
   <li><strong>연습용입니다.</strong> 매치메이킹이나 프리미어 같은 공식 경기와는 무관합니다.</li>
 </ul>
@@ -225,7 +226,10 @@
 <p>CS2는 PC 게임이라 휴대폰에서는 들어갈 수 없습니다. 페이지가 그 경우를 알아보고 PC에서 열라고 안내합니다.</p>
 
 <h3>이 앱이 제 PC에 무엇을 만드나요</h3>
-<p>CS2의 cfg 폴더에 설정 파일 몇 개(<code>cs2host_change.cfg</code>, <code>cs2host_bind.cfg</code>, <code>gamemode_*_server.cfg</code>)를 만듭니다. 전부 첫 줄에 이 앱이 만들었다는 표시가 들어가고, 표시가 없는 파일은 건드리지 않습니다. 앱 설정은 <code>%APPDATA%\CS2PracticeHost</code>에 저장됩니다.</p>
+<p>CS2의 cfg 폴더에 설정 파일 몇 개(<code>cs2host_change.cfg</code>, <code>cs2host_bind.cfg</code>, <code>gamemode_*_server.cfg</code>)를 만듭니다. 전부 첫 줄에 이 앱이 만들었다는 표시가 들어가고, 표시가 없는 파일은 건드리지 않습니다. 앱 설정과 맵 그림은 <code>%APPDATA%\CS2PracticeHost</code>에 저장됩니다.</p>
+
+<h3>맵 그림은 어디서 오나요</h3>
+<p>기본 맵 그림은 설치된 CS2의 게임 파일에 들어 있는 메뉴용 그림을 처음 한 번 읽어 작게 줄여 둔 것입니다. 게임 파일은 읽기만 하고, 앱에 그림을 넣어 배포하지 않습니다. 창작마당 맵 그림은 제작자가 올린 대표 그림을 Steam에서 받습니다. 그림이 아직 없으면 맵 이름이 색 칸에 보입니다.</p>
 
 </div>
 
@@ -250,7 +254,7 @@
   <div>
     <h3>Host</h3>
     <ol>
-      <li>Open the app and pick mode, map and bots. Your choices are saved as you make them.</li>
+      <li>Open the app and pick a <strong>mode</strong> from the tabs at the top. On the left choose <strong>Built-in / Workshop</strong>, click a <strong>map picture</strong>, and set the bots below. Your choices are saved as you make them.</li>
       <li>Press the <strong>▶ button</strong>. CS2 launches and the server opens.</li>
       <li>Once the server is up, the <strong>join link is copied for you</strong>. Send it to your friends.</li>
       <li>Press <strong>F10</strong> in game to change map or mode. Friends who are already in stay in.</li>
@@ -269,7 +273,7 @@
 
 <div class="card">
   <p><strong>Always launch CS2 with the app's ▶ button.</strong></p>
-  <p>If you start the game from Steam instead, the app cannot read the server address — the setting it needs is only attached when the app launches the game. When that happens, the strip at the top of the app turns yellow to tell you.</p>
+  <p>If you start the game from Steam instead, the app cannot read the server address — the setting it needs is only attached when the app launches the game. When that happens, the status at the top right of the app turns yellow to tell you.</p>
 </div>
 
 <h2>Things to know</h2>
@@ -278,7 +282,8 @@
   <li><strong>The server closes if the host returns to the menu.</strong> Everyone is disconnected, because the server runs inside the host's game. To change map or mode, do not leave the game — use F10.</li>
   <li><strong>Bots on one team stop at "humans + 2".</strong> The game does not let one team outnumber the other by more than two. To get every bot you picked, set the bot team to "Mix both teams".</li>
   <li><strong>Bot settings apply when a map loads.</strong> Changing them mid-round does nothing for that round. Change the map with F10 and the new settings come with it.</li>
-  <li><strong>Workshop maps you have downloaded can be picked too.</strong> F10 switches to them as well. A friend who does not have the map gets a download prompt and leaves once to download it — after that, the same link gets them back in.</li>
+  <li><strong>Workshop maps you have downloaded can be picked too.</strong> "Workshop" on the left lists the ones that suit the mode. F10 switches to them as well. A friend who does not have the map gets a download prompt and leaves once to download it — after that, the same link gets them back in.</li>
+  <li><strong>A workshop map you subscribe to while the app is open</strong> shows up when you switch back to the app.</li>
   <li><strong>Anyone who knows the address can join.</strong> Send it to friends only, not somewhere public.</li>
   <li><strong>This is for practice.</strong> It has nothing to do with official modes such as Matchmaking or Premier.</li>
 </ul>
@@ -301,7 +306,10 @@
 <p>CS2 is a PC game, so joining from a phone is not possible. The page detects this and asks them to open it on their PC.</p>
 
 <h3>What does this app create on my PC?</h3>
-<p>A few config files in the CS2 cfg folder (<code>cs2host_change.cfg</code>, <code>cs2host_bind.cfg</code>, <code>gamemode_*_server.cfg</code>). Each one starts with a line marking it as written by this app, and files without that mark are left alone. App settings are stored in <code>%APPDATA%\CS2PracticeHost</code>.</p>
+<p>A few config files in the CS2 cfg folder (<code>cs2host_change.cfg</code>, <code>cs2host_bind.cfg</code>, <code>gamemode_*_server.cfg</code>). Each one starts with a line marking it as written by this app, and files without that mark are left alone. App settings and map pictures are stored in <code>%APPDATA%\CS2PracticeHost</code>.</p>
+
+<h3>Where do the map pictures come from?</h3>
+<p>Built-in map pictures are the menu images inside your installed CS2 game files, read once and scaled down. The game files are only read, and no game images ship inside the app. Workshop pictures are the preview image the author uploaded, fetched from Steam. Until a picture is there, the map shows its name on a colored tile.</p>
 
 </div>
 
