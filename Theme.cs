@@ -78,6 +78,33 @@ namespace CS2PracticeHost
             }
         }
 
+        /// <summary>
+        /// 어두운 메뉴. 메뉴의 BackColor만 바꾸면 윈도우 기본 그리기가 밝은 바탕을 덮어 칠해서
+        /// 밝은 글자가 밝은 바탕 위에 놓였다 — 색 표를 통째로 어둡게 바꾼다.
+        /// </summary>
+        public static ToolStripRenderer MenuRenderer()
+        {
+            return new ToolStripProfessionalRenderer(new DarkMenuColors()) { RoundedEdges = false };
+        }
+
+        private sealed class DarkMenuColors : ProfessionalColorTable
+        {
+            public override Color ToolStripDropDownBackground { get { return Panel; } }
+            public override Color MenuBorder { get { return Edge; } }
+            public override Color MenuItemBorder { get { return Blue; } }
+            public override Color MenuItemSelected { get { return BlueFill; } }
+            public override Color MenuItemSelectedGradientBegin { get { return BlueFill; } }
+            public override Color MenuItemSelectedGradientEnd { get { return BlueFill; } }
+            public override Color ImageMarginGradientBegin { get { return Panel; } }
+            public override Color ImageMarginGradientMiddle { get { return Panel; } }
+            public override Color ImageMarginGradientEnd { get { return Panel; } }
+            public override Color SeparatorDark { get { return Edge; } }
+            public override Color SeparatorLight { get { return Panel; } }
+            public override Color CheckBackground { get { return BlueFill; } }
+            public override Color CheckSelectedBackground { get { return BlueFill; } }
+            public override Color CheckPressedBackground { get { return BlueFill; } }
+        }
+
         /// <summary>납작한 버튼 — 바탕·테두리·글자색만 정한다.</summary>
         public static void Flat(ButtonBase button, Color back, Color border, Color fore)
         {

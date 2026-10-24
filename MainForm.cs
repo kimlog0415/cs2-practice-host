@@ -723,6 +723,7 @@ namespace CS2PracticeHost
             _kindMenu = new ContextMenuStrip { ShowImageMargin = false, ShowCheckMargin = true };
             _kindMenu.BackColor = Theme.Panel;
             _kindMenu.ForeColor = Theme.Text;
+            _kindMenu.Renderer = Theme.MenuRenderer();
 
             string chosen = _settings.KindOf(tile.Map.Id);
             string id = tile.Map.Id;
@@ -731,7 +732,7 @@ namespace CS2PracticeHost
             AddKindItem(MapKind.Hostage, Strings.MarkHostage, id, chosen);
             AddKindItem(MapKind.Other, Strings.MarkOther, id, chosen);
             _kindMenu.Items.Add(new ToolStripSeparator());
-            var clear = new ToolStripMenuItem(Strings.MarkClear) { Enabled = chosen != null, ForeColor = Theme.Text };
+            var clear = new ToolStripMenuItem(Strings.MarkClear) { Enabled = chosen != null, ForeColor = chosen != null ? Theme.Text : Theme.Dim };
             clear.Click += (s, e) => SetMapKind(id, null);
             _kindMenu.Items.Add(clear);
 
