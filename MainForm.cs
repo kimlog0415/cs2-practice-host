@@ -232,6 +232,7 @@ namespace CS2PracticeHost
         private void LayoutOnResize()
         {
             _launch.Width = Math.Max(240, _copyLink.Left - _launch.Left - 10);
+            FitTileSize();
 
             int mid = ClientSize.Width / 2;
             foreach (Control c in new Control[] { _updateTitle, _updateVersions, _updateHow, _updateGet, _updateLater })
@@ -239,6 +240,30 @@ namespace CS2PracticeHost
 
             Invalidate();   // 머리 줄 둘은 ClientSize.Width로 그려서 다시 그려야 한다
         }
+
+        /// <summary>
+        /// 창을 넓히면 타일을 늘려 한 줄을 꽉 채운다. 늘리는 데는 상한이 있다 — 그림 원본이
+        /// `MaxTileWidth`라 그보다 키우면 흐려진다. 거기 닿으면 더 안 키우고 칸을 하나 더 만든다.
+        /// 가장 작은 창에서는 `BaseColumns`를 지켜 지금 보던 모양 그대로 둔다.
+        /// </summary>
+        private void FitTileSize()
+        {
+            const int Gap = 6;   // 타일 좌우 여백(Margin 3+3)
+            int usable = _tileHost.ClientSize.Width - _tileArea.Padding.Horizontal;
+            if (usable <= 0) return;
+
+            int columns = Math.Max(MapTile.BaseColumns,
+                (usable + MapTile.MaxTileWidth + Gap - 1) / (MapTile.MaxTileWidth + Gap));
+            int width = Math.Max(MapTile.TileWidth,
+                Math.Min(MapTile.MaxTileWidth, usable / columns - Gap));
+            var size = new Size(width, width * MapTile.TileHeight / MapTile.TileWidth);
+            if (size == _tileSize) return;
+
+            _tileSize = size;
+            foreach (MapTile tile in _tileArea.Controls.OfType<MapTile>()) tile.Size = size;
+        }
+
+        private Size _tileSize;
 
         /// <summary>
         /// 새 판 알림. 띠 아래 한 줄로 두니 놓치고 지나가서 창을 덮는 판으로 바꿨다(2026-10-17 디렉터 지시).
@@ -700,6 +725,7 @@ namespace CS2PracticeHost
                 tile.Click += (s, e) => _map.SelectedIndex = index;
                 tile.StarClicked += (s, e) => ToggleFavorite(((MapTile)s).Map.Id);
                 tile.MouseUp += (s, e) => { if (e.Button == MouseButtons.Right && !((MapTile)s).IsDisposed) ShowKindMenu((MapTile)s, e.Location); };
+                if (!_tileSize.IsEmpty) tile.Size = _tileSize;
                 _tileArea.Controls.Add(tile);
             }
 

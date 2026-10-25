@@ -70,6 +70,28 @@ namespace CS2PracticeHost
                 Report.Is("한 줄에 더 들어가나 (" + perRow + " → " + PerRow(area) + ")",
                           PerRow(area) > perRow, true);
 
+                // 넓힌 만큼 타일도 커진다. 다만 그림 원본이 264 폭이라 그보다는 안 키운다 —
+                // 거기 닿으면 칸을 하나 더 만드는 쪽으로 간다(디렉터가 2번으로 골랐다)
+                MapTile grown = area.Controls.OfType<MapTile>().First();
+                Report.Note("키운 뒤 타일 " + grown.Width + "×" + grown.Height);
+                Report.Is("타일이 커졌나", grown.Width > MapTile.TileWidth, true);
+                Report.Is("원본 폭을 안 넘나", grown.Width <= MapTile.MaxTileWidth, true);
+                Report.Is("비율이 유지되나",
+                          Math.Abs(grown.Height - grown.Width * MapTile.TileHeight / MapTile.TileWidth) <= 1, true);
+                Report.Is("한 줄이 꽉 차나 (남는 폭 " + Slack(host, area, grown) + "px)",
+                          Slack(host, area, grown) < grown.Width, true);
+
+                // 아주 넓히면 더 키우는 대신 칸이 늘어난다
+                int wideCols = PerRow(area);
+                form.ClientSize = new Size(3200, 1200);
+                MapTile capped = area.Controls.OfType<MapTile>().First();
+                Report.Note("3200 폭 — 타일 " + capped.Width + ", 한 줄 " + PerRow(area) + "개");
+                Report.Is("상한에 닿으면 안 더 커지나", capped.Width <= MapTile.MaxTileWidth, true);
+                Report.Is("대신 칸이 늘어나나 (" + wideCols + " → " + PerRow(area) + ")",
+                          PerRow(area) > wideCols, true);
+
+                form.ClientSize = new Size(1600, 1000);
+
                 Report.Is("상태 칸이 바닥에 붙어 있나",
                           form.ClientSize.Height - (status.Bottom) < 120, true);
                 Report.Is("버튼 줄이 바닥에 붙어 있나", launch.Bottom < form.ClientSize.Height, true);
@@ -85,7 +107,19 @@ namespace CS2PracticeHost
                 // 작은 화면으로 되돌려도 쓰던 대로여야 한다
                 form.ClientSize = new Size(980, 770);
                 Report.Is("되돌리면 한 줄 개수도 돌아오나", PerRow(area), perRow);
+                MapTile back = area.Controls.OfType<MapTile>().First();
+                Report.Is("되돌리면 타일도 쓰던 크기 가까이 (" + back.Width + ")",
+                          back.Width >= MapTile.TileWidth && back.Width < MapTile.TileWidth + 12, true);
             }
+        }
+
+
+        /// <summary>한 줄에서 남는 폭 — 작을수록 꽉 찬 것이다.</summary>
+        private static int Slack(Panel host, FlowLayoutPanel area, MapTile tile)
+        {
+            int usable = host.ClientSize.Width - area.Padding.Horizontal;
+            int per = tile.Width + 6;
+            return usable - (usable / per) * per;
         }
 
         /// <summary>타일 한 줄에 몇 개 들어가나 — 맨 윗줄에 있는 타일 수를 센다.</summary>

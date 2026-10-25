@@ -19,6 +19,16 @@ namespace CS2PracticeHost
         public const int TileWidth = 156;
         public const int TileHeight = 120;
 
+        /// <summary>
+        /// 타일을 이보다 넓게 늘리면 그림이 흐려진다 — 썸네일을 264×148로 받아 두기 때문이다
+        /// (기본 맵은 게임 파일에서 그 크기로 줄여 저장, 창작마당은 Steam에 그 크기로 요청).
+        /// 창이 더 넓어지면 타일을 키우는 대신 한 줄에 하나 더 넣는다.
+        /// </summary>
+        public const int MaxTileWidth = 264;
+
+        /// <summary>가장 작은 창에서 한 줄에 들어가는 수. 거기서는 지금 보던 모양 그대로여야 한다.</summary>
+        public const int BaseColumns = 5;
+
         public readonly GameMap Map;
         private Image _picture;
         private bool _selected;
