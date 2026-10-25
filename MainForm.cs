@@ -98,8 +98,11 @@ namespace CS2PracticeHost
             Text = Program.Title + " " + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
             Font = new Font(Strings.UiFont, 10);
             ClientSize = new Size(980, 770);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
-            MaximizeBox = false;
+            // 함께 써 본 사람이 최대화가 안 돼 답답하다고 했다. 창을 키울 수 있게 열고,
+            // 커진 자리는 맵 타일이 먹는다(타일 칸이 FlowLayoutPanel이라 저절로 늘어난다).
+            // 작은 화면에서도 쓰던 대로 되게 지금 크기를 최소로 박는다 — 더 줄면 칸이 겹친다.
+            FormBorderStyle = FormBorderStyle.Sizable;
+            MaximizeBox = true;
             StartPosition = FormStartPosition.CenterScreen;
 
             // exe에 박아 둔 자기 아이콘 (Valve 자산을 쓰지 않는다)
@@ -188,6 +191,53 @@ namespace CS2PracticeHost
             BuildUpdateOverlay();
 
             SetStaticText();
+            SetAnchors();
+            MinimumSize = Size;
+            Resize += (s, e) => LayoutOnResize();
+            LayoutOnResize();
+        }
+
+        /// <summary>
+        /// 창을 키울 수 있게 되면서 칸들이 따라와야 한다. 고정 좌표는 그대로 두고 어느 변에 붙을지만 정한다 —
+        /// 위쪽 줄은 오른쪽에, 타일 칸은 네 변 모두(그래서 늘어난 자리를 타일이 먹는다), 아래 줄은 바닥에.
+        /// </summary>
+        private void SetAnchors()
+        {
+            foreach (Control c in new Control[] { _banner, _lang, _help })
+                c.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+            _tabs.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+
+            _tileHost.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+            _tileArea.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+
+            foreach (Label text in _rowLabels)
+                text.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            foreach (ComboBox box in new[] { _mode, _map, _bots, _level, _team })
+                box.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+
+            _status.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+
+            _launch.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            _copyLink.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            _copyAddress.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+
+            _update.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+        }
+
+        /// <summary>
+        /// 앵커로 안 되는 둘. ▶ 버튼은 복사 버튼 둘이 오른쪽으로 물러난 만큼 늘려 가운데가 안 비게 하고,
+        /// 덮는 판의 글은 창 가운데에 다시 놓는다(만들 때 한 번 센 가운데라 창이 커지면 왼쪽으로 쏠린다).
+        /// </summary>
+        private void LayoutOnResize()
+        {
+            _launch.Width = Math.Max(240, _copyLink.Left - _launch.Left - 10);
+
+            int mid = ClientSize.Width / 2;
+            foreach (Control c in new Control[] { _updateTitle, _updateVersions, _updateHow, _updateGet, _updateLater })
+                c.Left = mid - c.Width / 2;
+
+            Invalidate();   // 머리 줄 둘은 ClientSize.Width로 그려서 다시 그려야 한다
         }
 
         /// <summary>

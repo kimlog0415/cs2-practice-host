@@ -1,5 +1,15 @@
 # 변경 내역 / Changelog
 
+## 1.4.3 (2026-10-25)
+
+- 창을 키우거나 최대화할 수 있습니다. 넓힌 만큼 맵 타일이 한 줄에 더 들어갑니다.
+
+---
+
+- You can now resize or maximize the window. A wider window fits more map tiles per row.
+
+---
+
 ## 1.4.2 (2026-10-24)
 
 - 창작마당 맵으로 바꾸면 친구 목소리가 끊기는 CS2 버그와 되살리는 법을 안내합니다.

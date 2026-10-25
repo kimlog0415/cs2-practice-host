@@ -30,9 +30,71 @@ namespace CS2PracticeHost
             KindMarks();
             TabsHaveTips();
             BrokenSettingsKept();
+            WindowGrows();
 
             Fake.ClearWorkshopMaps();
             Fake.ForgetWorkshopInfo();
+        }
+
+
+        /// <summary>
+        /// 함께 써 본 사람이 최대화가 안 돼 답답하다고 해서 창을 키울 수 있게 열었다(2026-10-25).
+        /// 여는 것과 큰 화면에서 쓸만한 것은 다른 일이라, 늘어난 자리를 타일이 먹는지까지 본다 —
+        /// 안 먹으면 가운데만 차고 양쪽이 비어 보인다. 창을 띄우지 않고 크기만 바꿔 칸 자리를 읽는다.
+        /// </summary>
+        private static void WindowGrows()
+        {
+            Report.Head("창을 키울 수 있나, 키우면 타일이 늘어나나");
+
+            using (MainForm form = Open("casual", "de_dust2"))
+            {
+                Report.Is("최대화 버튼이 있나", form.MaximizeBox, true);
+                Report.Is("크기를 바꿀 수 있나", form.FormBorderStyle.ToString(), "Sizable");
+                Report.Is("최소 크기가 쓰던 크기인가", form.MinimumSize == form.Size, true);
+
+                var host = Peek.Field<Panel>(form, "_tileHost");
+                var area = Peek.Field<FlowLayoutPanel>(form, "_tileArea");
+                var status = Peek.Field<Label>(form, "_status");
+                var launch = Peek.Field<Button>(form, "_launch");
+                var copyLink = Peek.Field<Button>(form, "_copyLink");
+
+                int hostW = host.Width, hostH = host.Height, areaW = area.Width;
+                int perRow = PerRow(area);
+                Report.Note("키우기 전 — 타일 칸 " + hostW + "×" + hostH + ", 한 줄에 " + perRow + "개");
+
+                form.ClientSize = new Size(1600, 1000);
+
+                Report.Is("타일 칸이 넓어졌나", host.Width > hostW, true);
+                Report.Is("타일 칸이 높아졌나", host.Height > hostH, true);
+                Report.Is("안쪽 칸도 같이 넓어졌나", area.Width > areaW, true);
+                Report.Is("한 줄에 더 들어가나 (" + perRow + " → " + PerRow(area) + ")",
+                          PerRow(area) > perRow, true);
+
+                Report.Is("상태 칸이 바닥에 붙어 있나",
+                          form.ClientSize.Height - (status.Bottom) < 120, true);
+                Report.Is("버튼 줄이 바닥에 붙어 있나", launch.Bottom < form.ClientSize.Height, true);
+                Report.Is("▶ 버튼이 복사 버튼까지 늘어났나", launch.Right + 10 <= copyLink.Left, true);
+                Report.Is("가운데가 비지 않나 (▶ 오른끝 " + launch.Right + " / 복사 왼끝 " + copyLink.Left + ")",
+                          copyLink.Left - launch.Right <= 12, true);
+
+                // 덮는 판은 만들 때 한 번 센 가운데라 창이 커지면 왼쪽으로 쏠린다
+                var title = Peek.Field<Label>(form, "_updateTitle");
+                Report.Is("새 판 알림 글이 가운데인가",
+                          Math.Abs((title.Left + title.Width / 2) - form.ClientSize.Width / 2) <= 1, true);
+
+                // 작은 화면으로 되돌려도 쓰던 대로여야 한다
+                form.ClientSize = new Size(980, 770);
+                Report.Is("되돌리면 한 줄 개수도 돌아오나", PerRow(area), perRow);
+            }
+        }
+
+        /// <summary>타일 한 줄에 몇 개 들어가나 — 맨 윗줄에 있는 타일 수를 센다.</summary>
+        private static int PerRow(FlowLayoutPanel area)
+        {
+            MapTile[] tiles = area.Controls.OfType<MapTile>().ToArray();
+            if (tiles.Length == 0) return 0;
+            int top = tiles.Min(t => t.Top);
+            return tiles.Count(t => t.Top == top);
         }
 
         private static MainForm Open(string mode, string map)
