@@ -218,9 +218,11 @@ namespace CS2PracticeHost
 
             _status.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 
+            // 버튼 줄은 앵커로 두면 ▶ 폭이 한 박자 늦는다(복사 버튼이 움직인 뒤에야 셈이 맞는다).
+            // 셋 다 바닥에만 붙이고 가로 자리는 LayoutOnResize가 창 크기에서 직접 정한다
             _launch.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            _copyLink.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            _copyAddress.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            _copyLink.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            _copyAddress.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 
             _update.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
         }
@@ -231,7 +233,10 @@ namespace CS2PracticeHost
         /// </summary>
         private void LayoutOnResize()
         {
-            _launch.Width = Math.Max(240, _copyLink.Left - _launch.Left - 10);
+            const int Edge = 20, Gap = 10;
+            _copyAddress.Left = ClientSize.Width - Edge - _copyAddress.Width;
+            _copyLink.Left = _copyAddress.Left - Gap - _copyLink.Width;
+            _launch.Width = Math.Max(240, _copyLink.Left - Gap - _launch.Left);
             FitTileSize();
 
             int mid = ClientSize.Width / 2;

@@ -3,10 +3,12 @@
 ## 1.4.3 (2026-10-25)
 
 - 창을 키우거나 최대화할 수 있습니다. 넓힌 만큼 맵 타일이 커지고 한 줄에 더 들어갑니다.
+- 타일이 커지면 맵 이름과 표시도 같이 커집니다.
 
 ---
 
 - You can now resize or maximize the window. As it widens, map tiles grow and more fit per row.
+- Map names and marks grow with the tiles.
 
 ---
 

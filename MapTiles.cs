@@ -42,7 +42,20 @@ namespace CS2PracticeHost
         /// <summary>오른쪽 위 별을 눌렀다. 별은 타일 고르기와 따로 눌린다 — 별을 눌러도 그 맵이 골라지지 않는다.</summary>
         public event EventHandler StarClicked;
 
-        private Rectangle StarBox { get { return new Rectangle(Width - 30, 4, 26, 26); } }
+        /// <summary>
+        /// 타일이 커진 만큼 글자·별·딱지도 같이 키운다. 안 키우면 큰 타일에서 글자만 작아 보인다
+        /// (2026-10-26 백로그). 1.0이 기본 크기다.
+        /// </summary>
+        private float Scale { get { return Width / (float)TileWidth; } }
+
+        private Rectangle StarBox
+        {
+            get
+            {
+                int d = (int)(26 * Scale), pad = (int)(4 * Scale);
+                return new Rectangle(Width - d - pad, pad, d, d);
+            }
+        }
 
         public bool Favorite
         {
@@ -123,16 +136,18 @@ namespace CS2PracticeHost
             if (_picture != null) g.DrawImage(_picture, Fit(_picture.Size, box));
             else using (var back = new SolidBrush(ColorOf(Map.Id))) g.FillRectangle(back, box);
 
-            var shade = new Rectangle(0, Height - 46, Width, 46);
+            float sc = Scale;
+            var shade = new Rectangle(0, Height - (int)(46 * sc), Width, (int)(46 * sc));
             using (var fade = new LinearGradientBrush(shade, Color.FromArgb(0, Theme.Bottom), Color.FromArgb(235, Theme.Bottom),
                                                       LinearGradientMode.Vertical))
                 g.FillRectangle(fade, shade);
 
             // 왼쪽 아래 종류 딱지, 그 뒤에 이름
-            int nameX = 8;
-            if (_kind != null) nameX += DrawKind(g, new Point(8, Height - 24)) + 5;
-            using (var font = new Font(Strings.UiFont, 9, _selected ? FontStyle.Bold : FontStyle.Regular))
-                TextRenderer.DrawText(g, Map.TileName, font, new Rectangle(nameX, Height - 26, Width - nameX - 8, 22), Theme.Text,
+            int nameX = (int)(8 * sc);
+            if (_kind != null) nameX += DrawKind(g, new Point(nameX, Height - (int)(24 * sc))) + (int)(5 * sc);
+            using (var font = new Font(Strings.UiFont, 9 * sc, _selected ? FontStyle.Bold : FontStyle.Regular))
+                TextRenderer.DrawText(g, Map.TileName, font,
+                    new Rectangle(nameX, Height - (int)(26 * sc), Width - nameX - (int)(8 * sc), (int)(22 * sc)), Theme.Text,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis |
                     TextFormatFlags.SingleLine);
 
@@ -162,7 +177,10 @@ namespace CS2PracticeHost
         private static void DrawStarShape(Graphics g, Rectangle box, Color color, bool filled, int backAlpha)
         {
             using (var back = new SolidBrush(Color.FromArgb(backAlpha, Theme.Bottom))) g.FillEllipse(back, box);
-            float cx = box.X + box.Width / 2f, cy = box.Y + box.Height / 2f + 0.5f, outer = 8.5f, inner = 3.6f;
+            // 뾰죽한 크기를 상자에서 뽑는다 — 타일이 커지면 별 상자도 커지고 별도 같이 커진다
+            float k = box.Width / 26f;
+            float cx = box.X + box.Width / 2f, cy = box.Y + box.Height / 2f + 0.5f * k,
+                  outer = 8.5f * k, inner = 3.6f * k;
             var points = new PointF[10];
             for (int i = 0; i < 10; i++)
             {
@@ -182,29 +200,31 @@ namespace CS2PracticeHost
         {
             int alpha = _kindGuessed ? 120 : 255;
             Color ink = Color.FromArgb(alpha, _kind == MapKind.Hostage ? Theme.BlueSoft : Theme.Gold);
-            var icon = new Rectangle(at.X, at.Y, 16, 16);
-            using (var pen = new Pen(ink, 1.6f))
+            float sc = Scale;
+            var icon = new Rectangle(at.X, at.Y, (int)(16 * sc), (int)(16 * sc));
+            using (var pen = new Pen(ink, 1.6f * sc))
             using (var fill = new SolidBrush(ink))
             {
                 if (MapKind.IsBomb(_kind))
                 {
-                    g.FillEllipse(fill, icon.X + 1, icon.Y + 4, 11, 11);                       // 몸통
-                    g.DrawLine(pen, icon.X + 9, icon.Y + 5, icon.X + 12, icon.Y + 1);          // 심지
-                    g.FillEllipse(fill, icon.X + 11, icon.Y - 1, 4, 4);                        // 불꽃
+                    g.FillEllipse(fill, icon.X + 1 * sc, icon.Y + 4 * sc, 11 * sc, 11 * sc);   // 몸통
+                    g.DrawLine(pen, icon.X + 9 * sc, icon.Y + 5 * sc, icon.X + 12 * sc, icon.Y + 1 * sc);  // 심지
+                    g.FillEllipse(fill, icon.X + 11 * sc, icon.Y - 1 * sc, 4 * sc, 4 * sc);    // 불꽃
                     string sites = _kind == MapKind.Bomb1 ? "1" : _kind == MapKind.Bomb2 ? "2" : null;
-                    if (sites == null) return 16;
-                    using (var font = new Font(Strings.UiFont, 8, FontStyle.Bold))
+                    if (sites == null) return icon.Width;
+                    using (var font = new Font(Strings.UiFont, 8 * sc, FontStyle.Bold))
                         TextRenderer.DrawText(g, sites, font, new Point(icon.Right, icon.Y + 1), ink);
-                    return 24;
+                    return (int)(24 * sc);
                 }
                 if (_kind == MapKind.Hostage)
                 {
-                    g.FillEllipse(fill, icon.X + 5, icon.Y + 1, 6, 6);                         // 머리
-                    g.FillPie(fill, icon.X + 2, icon.Y + 8, 12, 14, 180, 180);                 // 어깨
-                    return 16;
+                    g.FillEllipse(fill, icon.X + 5 * sc, icon.Y + 1 * sc, 6 * sc, 6 * sc);     // 머리
+                    g.FillPie(fill, icon.X + 2 * sc, icon.Y + 8 * sc, 12 * sc, 14 * sc, 180, 180);  // 어깨
+                    return icon.Width;
                 }
-                for (int i = 0; i < 3; i++) g.FillEllipse(fill, icon.X + 1 + i * 5, icon.Y + 7, 3, 3);   // 기타
-                return 16;
+                for (int i = 0; i < 3; i++)
+                    g.FillEllipse(fill, icon.X + (1 + i * 5) * sc, icon.Y + 7 * sc, 3 * sc, 3 * sc);   // 기타
+                return icon.Width;
             }
         }
 

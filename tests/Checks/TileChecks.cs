@@ -60,9 +60,11 @@ namespace CS2PracticeHost
 
                 int hostW = host.Width, hostH = host.Height, areaW = area.Width;
                 int perRow = PerRow(area);
+                int starBefore = StarSize(area.Controls.OfType<MapTile>().First());
                 Report.Note("키우기 전 — 타일 칸 " + hostW + "×" + hostH + ", 한 줄에 " + perRow + "개");
 
                 form.ClientSize = new Size(1600, 1000);
+                Relayout(form);
 
                 Report.Is("타일 칸이 넓어졌나", host.Width > hostW, true);
                 Report.Is("타일 칸이 높아졌나", host.Height > hostH, true);
@@ -81,16 +83,32 @@ namespace CS2PracticeHost
                 Report.Is("한 줄이 꽉 차나 (남는 폭 " + Slack(host, area, grown) + "px)",
                           Slack(host, area, grown) < grown.Width, true);
 
-                // 아주 넓히면 더 키우는 대신 칸이 늘어난다
+                // 타일만 커지고 글자·별·딱지가 그대로면 큰 타일에서 글자만 작아 보인다(2026-10-26 백로그)
+                Report.Is("글자·별이 같이 커지나 (배율 " + Scale(grown).ToString("0.00") + ")",
+                          Scale(grown) > 1.3f, true);
+                Report.Is("별 상자도 커졌나 (" + starBefore + " → " + StarSize(grown) + ")",
+                          StarSize(grown) > starBefore, true);
+                Report.Is("별이 타일 안에 있나",
+                          StarBoxOf(grown).Right <= grown.Width && StarBoxOf(grown).Top >= 0, true);
+
+                // ⚠️ 아주 넓히는 것은 창 크기로 못 본다 — 안 띄운 창에 화면보다 큰 크기를 주면
+                // ClientSize는 그 값을 돌려주는데 실제 자리는 화면에 맞춰 잘려 앵커가 어긋난다.
+                // 그래서 타일 칸을 직접 넓히고 셈만 다시 돌린다
                 int wideCols = PerRow(area);
-                form.ClientSize = new Size(3200, 1200);
+                int hostWide = host.Width;
+                host.Width = 2600;
+                Refit(form);
                 MapTile capped = area.Controls.OfType<MapTile>().First();
-                Report.Note("3200 폭 — 타일 " + capped.Width + ", 한 줄 " + PerRow(area) + "개");
+                Report.Note("타일 칸 2600 — 타일 " + capped.Width + ", 한 줄 " + PerRow(area) + "개");
                 Report.Is("상한에 닿으면 안 더 커지나", capped.Width <= MapTile.MaxTileWidth, true);
                 Report.Is("대신 칸이 늘어나나 (" + wideCols + " → " + PerRow(area) + ")",
                           PerRow(area) > wideCols, true);
 
+                host.Width = hostWide;   // 손으로 넓힌 것은 되돌린다 — 안 그러면 앵커 기준이 틀어진다
+                Refit(form);
+
                 form.ClientSize = new Size(1600, 1000);
+                Relayout(form);
 
                 Report.Is("상태 칸이 바닥에 붙어 있나",
                           form.ClientSize.Height - (status.Bottom) < 120, true);
@@ -106,6 +124,7 @@ namespace CS2PracticeHost
 
                 // 작은 화면으로 되돌려도 쓰던 대로여야 한다
                 form.ClientSize = new Size(980, 770);
+                Relayout(form);
                 Report.Is("되돌리면 한 줄 개수도 돌아오나", PerRow(area), perRow);
                 MapTile back = area.Controls.OfType<MapTile>().First();
                 Report.Is("되돌리면 타일도 쓰던 크기 가까이 (" + back.Width + ")",
@@ -113,6 +132,40 @@ namespace CS2PracticeHost
             }
         }
 
+
+
+
+
+        /// <summary>안 띄운 창은 Resize가 미덥지 않아 배치를 직접 돌린다.</summary>
+        private static void Relayout(MainForm form)
+        {
+            typeof(MainForm).GetMethod("LayoutOnResize", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(form, null);
+        }
+
+        /// <summary>타일 칸 폭을 손으로 바꾼 뒤 타일 크기 셈을 다시 돌린다.</summary>
+        private static void Refit(MainForm form)
+        {
+            typeof(MainForm).GetMethod("FitTileSize", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(form, null);
+        }
+
+        /// <summary>타일이 기본 크기의 몇 배인가 — 글자·별도 이 배율로 커져야 한다.</summary>
+        private static float Scale(MapTile tile)
+        {
+            return (float)typeof(MapTile)
+                .GetProperty("Scale", BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetValue(tile, null);
+        }
+
+        private static Rectangle StarBoxOf(MapTile tile)
+        {
+            return (Rectangle)typeof(MapTile)
+                .GetProperty("StarBox", BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetValue(tile, null);
+        }
+
+        private static int StarSize(MapTile tile) { return StarBoxOf(tile).Width; }
 
         /// <summary>한 줄에서 남는 폭 — 작을수록 꽉 찬 것이다.</summary>
         private static int Slack(Panel host, FlowLayoutPanel area, MapTile tile)
