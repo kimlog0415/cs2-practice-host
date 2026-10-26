@@ -53,6 +53,7 @@ namespace CS2PracticeHost
 
         /// <summary>줄 이름은 언어를 바꿀 때 다시 써야 하므로 들고 있는다.</summary>
         private readonly List<Label> _rowLabels = new List<Label>();
+        private ComboBox[] RowBoxes { get { return new[] { _bots, _level, _team }; } }
 
         private GameMap[] _maps = new GameMap[0];
         private bool _loading = true;
@@ -228,15 +229,30 @@ namespace CS2PracticeHost
         }
 
         /// <summary>
-        /// 앵커로 안 되는 둘. ▶ 버튼은 복사 버튼 둘이 오른쪽으로 물러난 만큼 늘려 가운데가 안 비게 하고,
+        /// 앵커로 안 되는 셋. 버튼 줄은 980에서의 비율(▶ 440 : 링크 280 : 주소 200) 그대로 나눠 늘린다 —
+        /// ▶만 늘리니 최대화에서 1400px짜리 금색 막대가 됐다(2026-10-26 A가 화면으로 봄).
+        /// 봇 콤보 셋은 타일 칸 폭에 맞춰 나눠 늘린다 — 안 늘리면 아래 상태 칸·버튼 줄만 끝까지 가서 줄이 안 맞는다.
         /// 덮는 판의 글은 창 가운데에 다시 놓는다(만들 때 한 번 센 가운데라 창이 커지면 왼쪽으로 쏠린다).
         /// </summary>
         private void LayoutOnResize()
         {
             const int Edge = 20, Gap = 10;
-            _copyAddress.Left = ClientSize.Width - Edge - _copyAddress.Width;
-            _copyLink.Left = _copyAddress.Left - Gap - _copyLink.Width;
-            _launch.Width = Math.Max(240, _copyLink.Left - Gap - _launch.Left);
+            int row = ClientSize.Width - 2 * Edge - 2 * Gap;   // 980에서 920
+            _launch.Width = row * 440 / 920;
+            _copyLink.Width = row * 280 / 920;
+            _copyLink.Left = _launch.Right + Gap;
+            _copyAddress.Left = _copyLink.Right + Gap;
+            _copyAddress.Width = ClientSize.Width - Edge - _copyAddress.Left;
+
+            const int ComboGap = 12;
+            int comboWidth = (_tileHost.Width - (RowBoxes.Length - 1) * ComboGap) / RowBoxes.Length;
+            for (int i = 0; i < RowBoxes.Length; i++)
+            {
+                int left = _tileHost.Left + i * (comboWidth + ComboGap);
+                RowBoxes[i].SetBounds(left, RowBoxes[i].Top, comboWidth, RowBoxes[i].Height);
+                if (i < _rowLabels.Count) _rowLabels[i].Left = left;
+            }
+
             FitTileSize();
 
             int mid = ClientSize.Width / 2;

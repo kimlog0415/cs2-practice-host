@@ -48,11 +48,17 @@ namespace CS2PracticeHost
         /// </summary>
         private float Scale { get { return Width / (float)TileWidth; } }
 
+        /// <summary>
+        /// 글자·별·딱지는 타일이 커진 만큼의 절반만 키운다. 같은 배율로 키우니 최대화에서 이름이 13.5pt로
+        /// 그림보다 글자가 먼저 들어왔다(2026-10-26 A가 화면으로 봄). 타일 1.5배 → 글자 1.25배.
+        /// </summary>
+        private float UiScale { get { return 1 + (Scale - 1) * 0.5f; } }
+
         private Rectangle StarBox
         {
             get
             {
-                int d = (int)(26 * Scale), pad = (int)(4 * Scale);
+                int d = (int)(26 * UiScale), pad = (int)(4 * UiScale);
                 return new Rectangle(Width - d - pad, pad, d, d);
             }
         }
@@ -136,9 +142,11 @@ namespace CS2PracticeHost
             if (_picture != null) g.DrawImage(_picture, Fit(_picture.Size, box));
             else using (var back = new SolidBrush(ColorOf(Map.Id))) g.FillRectangle(back, box);
 
-            float sc = Scale;
+            float sc = UiScale;
             var shade = new Rectangle(0, Height - (int)(46 * sc), Width, (int)(46 * sc));
-            using (var fade = new LinearGradientBrush(shade, Color.FromArgb(0, Theme.Bottom), Color.FromArgb(235, Theme.Bottom),
+            // 붓은 위아래로 한 줄씩 넓게 잡는다 — 딱 맞추면 GDI+가 첫 줄을 끝 색으로 칠해 그림 위에 가로줄이 비쳤다
+            var brushBox = new Rectangle(shade.X, shade.Y - 1, shade.Width, shade.Height + 2);
+            using (var fade = new LinearGradientBrush(brushBox, Color.FromArgb(0, Theme.Bottom), Color.FromArgb(235, Theme.Bottom),
                                                       LinearGradientMode.Vertical))
                 g.FillRectangle(fade, shade);
 
@@ -200,7 +208,7 @@ namespace CS2PracticeHost
         {
             int alpha = _kindGuessed ? 120 : 255;
             Color ink = Color.FromArgb(alpha, _kind == MapKind.Hostage ? Theme.BlueSoft : Theme.Gold);
-            float sc = Scale;
+            float sc = UiScale;
             var icon = new Rectangle(at.X, at.Y, (int)(16 * sc), (int)(16 * sc));
             using (var pen = new Pen(ink, 1.6f * sc))
             using (var fill = new SolidBrush(ink))

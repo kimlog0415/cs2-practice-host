@@ -42,12 +42,34 @@ namespace CS2PracticeHost
             return path;
         }
 
-        /// <summary>컨트롤 모서리를 둥글게 깎는다. 크기가 바뀌면 다시 불러야 한다.</summary>
+        /// <summary>
+        /// 컨트롤 모서리를 둥글게 깎는다. 크기가 바뀌면 저절로 다시 깎는다 — 깎은 모양(Region)은 그 크기에 박혀서,
+        /// 창을 키울 수 있게 한 1.4.3에서 타일·타일 칸·▶ 버튼이 만들 때 크기로 잘려 이름·별·글자가 사라졌다.
+        /// </summary>
         public static void Round(Control control, int radius)
         {
+            ApplyRound(control, radius);
+
+            // 같은 컨트롤에 여러 번 불려도(스크롤 막대는 움직일 때마다) 크기 따라가기는 한 번만 건다
+            object kept;
+            if (Rounded_.TryGetValue(control, out kept)) { ((int[])kept)[0] = radius; return; }
+            var holder = new[] { radius };
+            Rounded_.Add(control, holder);
+            control.SizeChanged += (s, e) => ApplyRound(control, holder[0]);
+        }
+
+        private static void ApplyRound(Control control, int radius)
+        {
+            if (control.Width <= 0 || control.Height <= 0) return;
+            Region old = control.Region;
             using (GraphicsPath path = Rounded(new Rectangle(0, 0, control.Width, control.Height), radius))
                 control.Region = new Region(path);
+            if (old != null) old.Dispose();
         }
+
+        // 컨트롤이 사라지면 같이 사라지게 약하게 잡는다(타일은 목록을 다시 채울 때마다 새로 만든다)
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Control, object> Rounded_ =
+            new System.Runtime.CompilerServices.ConditionalWeakTable<Control, object>();
 
         /// <summary>
         /// 어두운 콤보. 항목 글자는 DrawItem으로 그려지지만 오른쪽 화살표 칸은 윈도우가 흰 상자로 그려서,

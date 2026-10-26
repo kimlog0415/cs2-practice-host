@@ -116,6 +116,25 @@ namespace CS2PracticeHost
                 Report.Is("▶ 버튼이 복사 버튼까지 늘어났나", launch.Right + 10 <= copyLink.Left, true);
                 Report.Is("가운데가 비지 않나 (▶ 오른끝 " + launch.Right + " / 복사 왼끝 " + copyLink.Left + ")",
                           copyLink.Left - launch.Right <= 12, true);
+                // ▶만 늘리니 최대화에서 금색 막대가 화면을 가로질렀다 — 980의 비율(440:280)대로 나눈다
+                Report.Is("버튼 줄을 비율대로 나누나 (▶ " + launch.Width + " / 링크 " + copyLink.Width + ")",
+                          Math.Abs(launch.Width * 280 - copyLink.Width * 440) <= 440 * 2, true);
+                var copyAddress = Peek.Field<Button>(form, "_copyAddress");
+                Report.Is("주소 복사가 오른끝에 붙나", form.ClientSize.Width - copyAddress.Right, 20);
+
+                // 봇 콤보가 그대로면 상태 칸·버튼 줄만 끝까지 가서 줄이 안 맞는다
+                var team = Peek.Field<ComboBox>(form, "_team");
+                var bots = Peek.Field<ComboBox>(form, "_bots");
+                Report.Is("봇 콤보 줄이 타일 칸과 같은 왼끝인가", bots.Left, host.Left);
+                Report.Is("봇 콤보 줄이 타일 칸 오른끝까지 가나 (" + team.Right + " / " + host.Right + ")",
+                          Math.Abs(team.Right - host.Right) <= 3, true);
+
+                // 둥근 모서리는 깎은 모양(Region)이 크기에 박힌다. 크기가 바뀌어도 그대로면 커진 타일·타일 칸·▶가
+                // 만들 때 크기로 잘려 이름·별·글자가 사라졌다(2026-10-26 디렉터 화면, 1.4.3 시험판)
+                Report.Is("타일 칸의 깎은 모양이 따라 커졌나", RegionWidth(host) >= host.Width - 1, true);
+                Report.Is("타일의 깎은 모양이 따라 커졌나", RegionWidth(grown) >= grown.Width - 1, true);
+                Report.Is("▶의 깎은 모양이 따라 커졌나", RegionWidth(launch) >= launch.Width - 1, true);
+                Report.Is("상태 칸의 깎은 모양이 따라 커졌나", RegionWidth(status) >= status.Width - 1, true);
 
                 // 덮는 판은 만들 때 한 번 센 가운데라 창이 커지면 왼쪽으로 쏠린다
                 var title = Peek.Field<Label>(form, "_updateTitle");
@@ -166,6 +185,14 @@ namespace CS2PracticeHost
         }
 
         private static int StarSize(MapTile tile) { return StarBoxOf(tile).Width; }
+
+        /// <summary>깎은 모양의 폭. 깎지 않았으면 컨트롤 폭.</summary>
+        private static int RegionWidth(Control c)
+        {
+            if (c.Region == null) return c.Width;
+            using (Graphics g = c.CreateGraphics())
+                return (int)Math.Round(c.Region.GetBounds(g).Width);
+        }
 
         /// <summary>한 줄에서 남는 폭 — 작을수록 꽉 찬 것이다.</summary>
         private static int Slack(Panel host, FlowLayoutPanel area, MapTile tile)
