@@ -159,9 +159,7 @@ namespace CS2PracticeHost
         {
             get
             {
-                return Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "CS2PracticeHost", "notices.json");
+                return Path.Combine(AppFolder.Dir, "notices.json");
             }
         }
 

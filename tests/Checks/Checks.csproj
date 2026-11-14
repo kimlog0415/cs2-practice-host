@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <!-- 앱의 실제 소스를 그대로 묶는다. Program.cs만 뺀다(자기 Main이 있어서 — Stub.cs가 대신한다) -->
+    <Compile Include="..\..\AppFolder.cs" />
     <Compile Include="..\..\CfgWriter.cs" />
     <Compile Include="..\..\ConsoleLog.cs" />
     <Compile Include="..\..\Cs2Paths.cs" />

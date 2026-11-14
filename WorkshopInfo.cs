@@ -114,9 +114,7 @@ namespace CS2PracticeHost
         {
             get
             {
-                return Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "CS2PracticeHost", "workshop.json");
+                return Path.Combine(AppFolder.Dir, "workshop.json");
             }
         }
 

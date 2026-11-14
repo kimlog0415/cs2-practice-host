@@ -50,9 +50,10 @@ tests/Checks/bin/Debug/net48/Checks.exe state <가짜 cs2.exe 경로>   (경로�
   구분자로 치환돼 한국어 환경에서 `10-04`가 나온다. 앱 파서는 Invariant라 `/`를 글자 그대로 본다
   (게임이 쓰는 실제 형식이 `/`다).
 - **앱의 ▶ 버튼은 절대 누르지 않는다.** `Cs2Process.CloseAll()`이 `cs2` 이름의 프로세스를 전부 죽인다.
-- **`APPDATA` 환경변수로는 설정 위치를 못 옮긴다**(`GetFolderPath`는 셸에서 읽는다). 그래서 확인기가
-  실제 `%APPDATA%\CS2PracticeHost\settings.json`을 쓴다 — 시작할 때 내용을 들고 있다가 끝나면
-  그대로 돌려놓는다(`Fake.KeepRealSettings`).
+- **`APPDATA` 환경변수로는 설정 위치를 못 옮긴다**(`GetFolderPath`는 셸에서 읽는다). 그래서 앱이
+  `AppFolder.Dir` 한 곳으로 앱 폴더를 정하고, 확인기는 시작할 때 그걸 임시 폴더
+  (`%TEMP%\cs2host-checks\appdata`)로 돌린다(`Fake.UseOwnAppFolder`). 쓰는 사람의 설정·캐시를
+  안 건드리니 앱을 켜 둔 채 돌려도 된다(2026-11-14 전까지는 실제 설정을 썼다 돌려놓았다).
 - **번호를 받아 오는 것과 창에 올리는 것은 다른 자리다.** 창을 안 띄우면 `Shown`에 걸린 쪽이
   아예 안 돌아간다. 앞의 것만 보고 「확인 완료」로 닫았다가 놓친 적이 있다.
 

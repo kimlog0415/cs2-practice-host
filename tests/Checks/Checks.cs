@@ -25,7 +25,7 @@ namespace CS2PracticeHost
             Console.WriteLine("이 확인기 버전: " + Assembly.GetExecutingAssembly().GetName().Version);
             Console.WriteLine();
 
-            Fake.KeepRealSettings();
+            Fake.UseOwnAppFolder();
             try
             {
                 if (mode == "all" || mode == "lang") LangChecks.Run();
@@ -43,7 +43,6 @@ namespace CS2PracticeHost
             }
             finally
             {
-                Fake.RestoreRealSettings();
                 Fake.Clean();
             }
 
@@ -240,9 +239,7 @@ namespace CS2PracticeHost
                 });
             }
 
-            string path = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "CS2PracticeHost", "workshop.json");
+            string path = Path.Combine(AppFolder.Dir, "workshop.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             using (var stream = File.Create(path))
                 new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(WorkshopCache))
@@ -264,9 +261,7 @@ namespace CS2PracticeHost
 
         public static void ForgetWorkshopInfo()
         {
-            try { File.Delete(Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "CS2PracticeHost", "workshop.json")); }
+            try { File.Delete(Path.Combine(AppFolder.Dir, "workshop.json")); }
             catch (Exception) { }
             WorkshopInfo.Forget();
         }
@@ -278,15 +273,17 @@ namespace CS2PracticeHost
         }
 
         /// <summary>
-        /// ⚠️ 설정은 실제 %APPDATA%에 쓴다. GetFolderPath는 환경변수로 못 옮긴다.
-        /// 돌리기 전에 그 폴더가 원래 있었는지 보고, 없었으면 끝나고 지운다.
+        /// 앱 폴더를 임시 폴더로 돌린다. 쓰는 사람의 실제 설정·캐시를 안 건드리니 앱을 켜 둔 채 돌려도 된다.
+        /// 앞 실행이 중간에 죽어 남긴 것이 있으면 지우고 시작한다.
         /// </summary>
-        public static string SettingsPath()
+        public static void UseOwnAppFolder()
         {
-            return Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "CS2PracticeHost", "settings.json");
+            string dir = Path.Combine(Path.GetTempPath(), Root, "appdata");
+            try { Directory.Delete(dir, true); } catch (Exception) { }
+            AppFolder.Override = dir;
         }
+
+        public static string SettingsPath() { return Path.Combine(AppFolder.Dir, "settings.json"); }
 
         public static void WriteSettings(string json)
         {
@@ -296,29 +293,6 @@ namespace CS2PracticeHost
         }
 
         public static string ReadSettings() { return File.ReadAllText(SettingsPath()); }
-
-        private static string _saved;
-        private static bool _existed;
-
-        /// <summary>
-        /// 확인기는 쓰는 사람의 실제 설정 파일을 덮어쓴다(GetFolderPath는 환경변수로 못 옮긴다).
-        /// 그래서 시작할 때 내용을 들고 있다가 끝나면 그대로 돌려놓는다.
-        /// </summary>
-        public static void KeepRealSettings()
-        {
-            _existed = File.Exists(SettingsPath());
-            _saved = _existed ? File.ReadAllText(SettingsPath()) : null;
-        }
-
-        public static void RestoreRealSettings()
-        {
-            try
-            {
-                if (_existed) File.WriteAllText(SettingsPath(), _saved);
-                else if (File.Exists(SettingsPath())) File.Delete(SettingsPath());
-            }
-            catch (Exception) { }
-        }
     }
 
     /// <summary>창을 띄우지 않고 MainForm 속을 들여다본다.</summary>

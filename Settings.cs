@@ -64,9 +64,7 @@ namespace CS2PracticeHost
         {
             get
             {
-                string dir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CS2PracticeHost");
-                return Path.Combine(dir, "settings.json");
+                return Path.Combine(AppFolder.Dir, "settings.json");
             }
         }
 

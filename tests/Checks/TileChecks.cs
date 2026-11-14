@@ -412,9 +412,9 @@ namespace CS2PracticeHost
         {
             Report.Head("깨진 설정 파일은 따로 남기고, 저장은 바꿔치기로");
 
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                                       "CS2PracticeHost", "settings.json");
+            string path = Fake.SettingsPath();
             string dir = Path.GetDirectoryName(path);
+            Directory.CreateDirectory(dir);
             foreach (string old in Directory.GetFiles(dir, "settings.broken-*.json")) File.Delete(old);
 
             File.WriteAllText(path, "{\"mode\":\"casual\",\"mapKinds\":[\"de_dust2=bomb2\"");   // 쓰다 끊긴 꼴
@@ -472,9 +472,8 @@ namespace CS2PracticeHost
         {
             Report.Head("받아 둔 그림이 타일에 붙나 (창작마당·기본 맵)");
 
-            string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                                      "CS2PracticeHost", "thumbs");
-            // 실제 사용자 폴더라 이미 있으면 건드리지 않고, 없을 때만 놓았다가 치운다
+            string dir = Path.Combine(AppFolder.Dir, "thumbs");
+            // 이미 있으면 건드리지 않고, 없을 때만 놓았다가 치운다
             string[] files = { Path.Combine(dir, "3070596071.jpg"), Path.Combine(dir, "builtin", "de_dust2.png") };
             bool[] existed = files.Select(File.Exists).ToArray();
             for (int i = 0; i < files.Length; i++)

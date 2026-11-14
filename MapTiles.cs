@@ -303,9 +303,7 @@ namespace CS2PracticeHost
         {
             get
             {
-                return Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "CS2PracticeHost", "thumbs");
+                return Path.Combine(AppFolder.Dir, "thumbs");
             }
         }
 
