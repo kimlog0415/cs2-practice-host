@@ -1,0 +1,35 @@
+{
+  "modes": [
+    {"key": "casual", "maps": ["de_cache", "de_anubis", "de_inferno", "de_mirage", "de_dust2", "de_nuke", "de_ancient", "de_train", "de_vertigo", "de_overpass", "de_cbble", "cs_office", "cs_italy"]},
+    {"key": "competitive", "maps": ["de_cache", "de_anubis", "de_inferno", "de_mirage", "de_dust2", "de_nuke", "de_ancient", "de_train", "de_vertigo", "de_overpass", "de_cbble", "cs_office", "cs_italy"]},
+    {"key": "wingman", "maps": ["de_debris", "de_eldorado", "de_poseidon", "de_overpass", "de_vertigo", "de_nuke", "de_inferno", "de_cbble"]},
+    {"key": "rush", "maps": ["rush_001"]},
+    {"key": "deathmatch", "maps": ["de_cache", "de_anubis", "de_inferno", "de_mirage", "de_dust2", "de_nuke", "de_ancient", "de_train", "de_vertigo", "de_overpass", "de_cbble", "cs_office", "cs_italy"]},
+    {"key": "armsrace", "maps": ["ar_baggage", "ar_shoots", "ar_shoots_night", "ar_pool_day"]},
+    {"key": "retake", "maps": ["de_cache", "de_anubis", "de_inferno", "de_mirage", "de_dust2", "de_nuke", "de_ancient", "de_train", "de_vertigo", "de_overpass", "de_cbble"]}
+  ],
+  "ignore": ["de_ancient_night"],
+  "names": [
+    {"id": "de_cache", "ko": "무기창고", "en": "Cache"},
+    {"id": "de_anubis", "ko": "아누비스", "en": "Anubis"},
+    {"id": "de_inferno", "ko": "인페르노", "en": "Inferno"},
+    {"id": "de_mirage", "ko": "신기루", "en": "Mirage"},
+    {"id": "de_dust2", "ko": "더스트2", "en": "Dust II"},
+    {"id": "de_nuke", "ko": "뉴크", "en": "Nuke"},
+    {"id": "de_ancient", "ko": "고대", "en": "Ancient"},
+    {"id": "de_train", "ko": "열차", "en": "Train"},
+    {"id": "de_vertigo", "ko": "버티고", "en": "Vertigo"},
+    {"id": "de_overpass", "ko": "오버패스", "en": "Overpass"},
+    {"id": "de_cbble", "ko": "코블", "en": "Cobblestone"},
+    {"id": "cs_office", "ko": "사무실", "en": "Office"},
+    {"id": "cs_italy", "ko": "이탈리아", "en": "Italy"},
+    {"id": "de_debris", "ko": "잔해", "en": "Debris"},
+    {"id": "de_eldorado", "ko": "엘도라도", "en": "El Dorado"},
+    {"id": "de_poseidon", "ko": "포세이돈", "en": "Poseidon"},
+    {"id": "rush_001", "ko": "컴플렉스", "en": "Complex"},
+    {"id": "ar_baggage", "ko": "수하물", "en": "Baggage"},
+    {"id": "ar_shoots", "ko": "재배소(낮)", "en": "Shoots (Day)"},
+    {"id": "ar_shoots_night", "ko": "재배소(밤)", "en": "Shoots (Night)"},
+    {"id": "ar_pool_day", "ko": "풀 데이", "en": "Pool Day"}
+  ]
+}

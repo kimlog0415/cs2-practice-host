@@ -31,6 +31,7 @@ namespace CS2PracticeHost
                 if (mode == "all" || mode == "lang") LangChecks.Run();
                 if (mode == "all" || mode == "modes") ModeChecks.Run();
                 if (mode == "all" || mode == "maps") MapChecks.Run();
+                if (mode == "all" || mode == "maps") BuiltInMapChecks.Run();
                 if (mode == "all" || mode == "tiles") TileChecks.Run();
                 if (mode == "all" || mode == "notices") NoticeChecks.Run();
                 if (mode == "all" || mode == "state") StateChecks.Run(args.Skip(1).FirstOrDefault());

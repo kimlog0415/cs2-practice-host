@@ -74,6 +74,7 @@ namespace CS2PracticeHost
         public MainForm(Settings settings)
         {
             _settings = settings;
+            BuiltInMaps.ApplySaved();   // 전에 사이트에서 받아 둔 기본 맵 목록 — 받는 것은 창이 뜬 뒤
             BuildLayout();
             FillControls();
             RestoreSelection();
@@ -87,7 +88,7 @@ namespace CS2PracticeHost
             Shown += (s, e) =>
             {
                 BeginInvoke((Action)SyncTileSelection);   // 타일 배치가 끝난 다음 차례에
-                RefreshStatus(); _watch.Start(); ShowUpdateIfAny(); FetchNotices(); LookUpWorkshopIfAny(); LoadBuiltInPictures();
+                RefreshStatus(); _watch.Start(); ShowUpdateIfAny(); FetchNotices(); LookUpWorkshopIfAny(); LoadBuiltInPictures(); SyncBuiltInMaps();
             };
         }
 
@@ -652,7 +653,7 @@ namespace CS2PracticeHost
         {
             // 받아 둔 창작마당 맵은 제작자가 단 태그로 걸러 그 모드에 맞는 것만 붙인다
             // 별 찍은 맵이 각 칸 맨 앞에, 나머지는 원래 순서(디렉터 선택). OrderBy는 같은 값끼리 순서를 지킨다
-            _maps = SelectedMode.Maps
+            _maps = BuiltInMaps.For(SelectedMode)
                 .Where(m => File.Exists(Path.Combine(Cs2Paths.MapsDir, m.Id + ".vpk")))
                 .Concat(WorkshopMaps.For(SelectedMode))
                 .OrderBy(m => _settings.IsFavorite(m.Id) ? 0 : 1)
@@ -1229,12 +1230,31 @@ namespace CS2PracticeHost
         /// </summary>
         private async void LoadBuiltInPictures()
         {
-            string[] ids = GameData.Modes.SelectMany(m => m.Maps).Select(m => m.Id).Distinct()
+            string[] ids = BuiltInMaps.AllIds()
                 .Where(id => File.Exists(Path.Combine(Cs2Paths.MapsDir, id + ".vpk"))).ToArray();
 
             bool gained = await Task.Run(() => Thumbs.FetchBuiltInMissing(ids));
             if (!gained || IsDisposed) return;
             foreach (MapTile tile in Tiles) tile.ReloadPicture();
+        }
+
+        /// <summary>
+        /// 기본 맵 목록을 게임과 맞춘다 — 게임 폴더에서 찾은 맵의 이름을 번역 파일에서 읽고, 사이트 목록을 받는다.
+        /// 달라진 게 있으면 고른 맵을 지킨 채 다시 채우고, 새로 생긴 맵의 그림을 꺼낸다.
+        /// </summary>
+        private async void SyncBuiltInMaps()
+        {
+            bool named = await Task.Run(() => BuiltInMaps.LearnNames());
+            if (IsDisposed) return;
+            bool listed = await Task.Run(() => BuiltInMaps.Fetch());
+            if (IsDisposed || (!named && !listed)) return;
+
+            GameMap keep = SelectedMap;
+            bool wasLoading = _loading;
+            _loading = true;
+            FillMaps(keep != null ? keep.Id : null);
+            _loading = wasLoading;
+            LoadBuiltInPictures();
         }
 
         /// <summary>확인은 네트워크를 타므로 화면이 멈추지 않게 뒤에서 돌린다.</summary>
