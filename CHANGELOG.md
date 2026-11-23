@@ -1,5 +1,17 @@
 # 변경 내역 / Changelog
 
+## 1.4.4 (2026-11-23)
+
+- 코블이 기본 맵에 들어왔습니다. 볼더·파흐베르크·쉘터는 공식 맵에서 빠졌습니다.
+- CS2가 공식 맵을 바꾸면 앱을 새로 받지 않아도 맵 목록이 따라갑니다.
+
+---
+
+- Cobblestone is now a built-in map. Boulder, Fachwerk and Shelter left the official pool.
+- When CS2 changes its official maps, the map list follows without a new download.
+
+---
+
 ## 1.4.3 (2026-10-26)
 
 - 창을 키우거나 최대화할 수 있습니다.
