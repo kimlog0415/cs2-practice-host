@@ -101,10 +101,19 @@ namespace CS2PracticeHost
             Report.Head("윙맨·러시 맵");
 
             string[] wingman = GameData.Modes.First(m => m.Key == "wingman").Maps.Select(x => x.Id).ToArray();
-            Report.Is("윙맨 맵 수", wingman.Length, 7);
+            Report.Is("윙맨 맵 수", wingman.Length, 8);
             Report.Is("윙맨 전용 셋이 있나",
                       wingman.Contains("de_debris") && wingman.Contains("de_eldorado") && wingman.Contains("de_poseidon"),
                       true);
+
+            // 2026-11-17 CS2 업데이트 — 코블이 들어오고 볼더·파흐베르크·쉘터가 공식 목록에서 빠졌다
+            string[] gone = { "de_boulder", "de_fachwerk", "cs_shelter" };
+            foreach (string key in new[] { "casual", "competitive", "wingman", "deathmatch", "retake" })
+            {
+                string[] ids = GameData.Modes.First(m => m.Key == key).Maps.Select(x => x.Id).ToArray();
+                Report.Is(key + "에 코블이 있나", ids.Contains("de_cbble"), true);
+                Report.Is(key + "에 빠진 맵이 남았나", ids.Any(gone.Contains), false);
+            }
 
             GameMap[] rush = GameData.Modes.First(m => m.Key == "rush").Maps;
             Report.Is("러시 맵 수", rush.Length, 1);

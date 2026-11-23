@@ -130,17 +130,17 @@ namespace CS2PracticeHost
             new GameMap("de_train", "열차", "Train"),
             new GameMap("de_vertigo", "버티고", "Vertigo"),
             new GameMap("de_overpass", "오버패스", "Overpass"),
-            new GameMap("de_boulder", "볼더", "Boulder"),
-            new GameMap("de_fachwerk", "파흐베르크", "Fachwerk"),
-            new GameMap("cs_shelter", "쉘터", "Shelter"),
+            // 2026-11-17 CS2 업데이트 — 코블이 공식 캐주얼·경쟁·윙맨·탈환·데스매치에 들어오고
+            // 볼더·파흐베르크·쉘터가 빠졌다(게임 폴더에서 세 맵 파일이 지워졌다). 한글 이름은 게임 번역 파일 그대로
+            new GameMap("de_cbble", "코블", "Cobblestone"),
             new GameMap("cs_office", "사무실", "Office"),
             new GameMap("cs_italy", "이탈리아", "Italy"),
         };
 
-        private static readonly GameMap[] RetakeMaps = ClassicMaps.Take(10).ToArray();
+        private static readonly GameMap[] RetakeMaps = ClassicMaps.Take(11).ToArray();
 
         /// <summary>
-        /// 윙맨(2대2) 전용 맵. 밸브 맵 넷은 폭탄 자리를 하나로 줄인 판이라 파일은 기본 맵과 같고,
+        /// 윙맨(2대2) 전용 맵. 밸브 맵 다섯(코블은 2026-11-17에 더해졌다)은 폭탄 자리를 하나로 줄인 판이라 파일은 기본 맵과 같고,
         /// 셋(Debris·El Dorado·Poseidon)은 윙맨에만 있다. 디렉터가 게임 화면에서 읽어 준 목록이다.
         /// </summary>
         private static readonly GameMap[] WingmanMaps =
@@ -152,6 +152,7 @@ namespace CS2PracticeHost
             new GameMap("de_vertigo", "버티고", "Vertigo"),
             new GameMap("de_nuke", "뉴크", "Nuke"),
             new GameMap("de_inferno", "인페르노", "Inferno"),
+            new GameMap("de_cbble", "코블", "Cobblestone"),
         };
 
         /// <summary>러시(3대3)는 맵이 하나다. 그 안에 방 열아홉이 들어 있다.</summary>
