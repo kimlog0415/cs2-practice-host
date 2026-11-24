@@ -112,13 +112,14 @@ namespace CS2PracticeHost
         /// <summary>
         /// 설치기가 없는 단일 exe라 앱이 스스로 갈아치울 수 없다(돌고 있는 자기 파일이 잠긴다).
         /// 받아서 덮는 것은 사람이 하는 일이므로 그걸 문구로 말해 준다.
+        /// 켜 둔 채로는 덮어쓸 수 없어서 「받으러 가기」를 누르면 앱이 닫힌다 — 그것도 미리 말한다(2026-11-25).
         /// </summary>
         public static string UpdateHow
         {
             get
             {
-                return T("받아서 지금 쓰는 파일을 덮은 뒤\n다시 열어 주세요.",
-                         "Download it, replace the file you are using,\nthen open it again.");
+                return T("받으러 가면 이 앱은 닫혀요.\n받은 파일로 덮은 뒤 다시 열어 주세요.",
+                         "This app closes when you go to get it.\nReplace the file, then open it again.");
             }
         }
 

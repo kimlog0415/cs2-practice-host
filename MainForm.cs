@@ -323,7 +323,9 @@ namespace CS2PracticeHost
 
             _updateGet.Location = new Point(mid - 120, 360);
             _updateGet.Size = new Size(240, 48);
-            _updateGet.Click += (s, e) => OpenInBrowser(SiteUrl);
+            // 받으러 가면 앱을 닫는다 — 앱이 켜져 있으면 받은 exe로 덮어쓸 수 없었다(2026-11-25 디렉터 지적).
+            // 브라우저를 못 열었으면 주소를 복사했다는 안내를 봐야 하니 닫지 않는다. 게임(cs2)은 건드리지 않는다
+            _updateGet.Click += (s, e) => { if (OpenInBrowser(SiteUrl)) Close(); };
             Theme.Flat(_updateGet, Theme.Gold, Theme.Gold, Theme.OnGold);
             _update.Controls.Add(_updateGet);
             Theme.Round(_updateGet, 8);
@@ -1285,13 +1287,15 @@ namespace CS2PracticeHost
             get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(3); }
         }
 
-        private void OpenInBrowser(string url)
+        /// <summary>열었으면 true. 못 열면 주소를 복사하고 알린 뒤 false.</summary>
+        private bool OpenInBrowser(string url)
         {
-            try { Process.Start(url); }
+            try { Process.Start(url); return true; }
             catch (Exception)
             {
                 CopyToClipboard(url);
                 Tell(Strings.CannotOpenPage(url));
+                return false;
             }
         }
 
