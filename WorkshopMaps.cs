@@ -34,8 +34,10 @@ namespace CS2PracticeHost
                     if (!long.TryParse(id, out ignored)) continue;
 
                     // 이름을 못 읽은 맵은 띄우지 않는다 — 고를 수 있는데 안 열리는 게 제일 나쁘다
-                    string[] names = PlayableOf(MapNamesIn(TreeFile(dir, id)),
-                                                PublishData(dir, "source_folder"), PublishData(dir, "title"));
+                    string tree = TreeFile(dir, id);
+                    string[] names = PlayableOf(MapNamesIn(tree),
+                                                PublishData(dir, "source_folder"), PublishData(dir, "title"),
+                                                OverviewNamesIn(tree));
                     foreach (string name in names)
                         found.Add(GameMap.Workshop(id, name, names.Length > 1));
                 }
@@ -53,13 +55,24 @@ namespace CS2PracticeHost
         /// (`shortdust` → `de_shortdust`). 폴더 이름이 어느 쪽과도 안 맞으면 올린 제목과 같은 이름만 남긴다
         /// (`rats_addon` 안의 `de_rats_room`과 제작자가 남긴 `test` — `test`는 안 열린다).
         /// 그것도 없으면 진짜 맵이 여럿 든 묶음으로 보고 다 둔다.
+        ///
+        /// 폴더 이름보다 먼저 보는 것이 미니맵이다. 미니맵 정보(`resource/overviews/이름.txt`)가 일부 맵에만 있으면
+        /// 그쪽이 완성본이고 나머지는 제작자가 남긴 작업본이다. Dante가 그랬다 — 폴더 이름 `italia2`와 같은
+        /// 작업본 `italia2`를 고르는 바람에 게임 메뉴로 켜면 뜨는 미니맵이 앱으로 켜면 안 떴다(2026-11-25 디렉터 지적).
         /// </summary>
-        internal static string[] PlayableOf(string[] names, string sourceFolder, string title = null)
+        internal static string[] PlayableOf(string[] names, string sourceFolder, string title = null, string[] overviews = null)
         {
             // Labbo는 하늘 상자를 `labbo_3dskybox`로 싣는다
             string[] maps = names.Where(n => !n.EndsWith("_skybox", StringComparison.OrdinalIgnoreCase) &&
                                              !n.EndsWith("_3dskybox", StringComparison.OrdinalIgnoreCase)).ToArray();
             if (maps.Length <= 1) return maps;
+
+            if (overviews != null)
+            {
+                string[] withRadar = maps.Where(n => overviews.Contains(n, StringComparer.OrdinalIgnoreCase)).ToArray();
+                if (withRadar.Length > 0 && withRadar.Length < maps.Length) maps = withRadar;
+                if (maps.Length <= 1) return maps;
+            }
 
             string[] main = NamedLike(maps, sourceFolder);
             if (main.Length > 0) return main;
@@ -113,6 +126,18 @@ namespace CS2PracticeHost
         /// </summary>
         internal static string[] MapNamesIn(string vpk)
         {
+            return NamesIn(vpk, "vpk", "maps");
+        }
+
+        /// <summary>미니맵 정보가 있는 맵 이름들 — 목차의 `resource/overviews/이름.txt`.</summary>
+        internal static string[] OverviewNamesIn(string vpk)
+        {
+            return NamesIn(vpk, "txt", "resource/overviews");
+        }
+
+        /// <summary>목차에서 확장자와 경로가 딱 맞는 파일 이름들.</summary>
+        private static string[] NamesIn(string vpk, string wantExt, string wantPath)
+        {
             var names = new List<string>();
             try
             {
@@ -138,7 +163,7 @@ namespace CS2PracticeHost
                                 ushort preload = r.ReadUInt16();
                                 r.ReadBytes(12);                    // 조각 번호·위치·길이·끝 표시
                                 r.ReadBytes(preload);
-                                if (ext == "vpk" && path == "maps") names.Add(file);
+                                if (ext == wantExt && path == wantPath) names.Add(file);
                             }
                         }
                     }

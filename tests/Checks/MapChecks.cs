@@ -88,6 +88,16 @@ namespace CS2PracticeHost
             Report.Is("_3dskybox도 빠지고 제목+접두사로 고르나 (labbo)",
                       string.Join(", ", WorkshopMaps.PlayableOf(new[] { "labbo_3dskybox", "de_labbo" }, "reflex", "Labbo")),
                       "de_labbo");
+            // Dante — 폴더 이름(italia2)과 같은 작업본이 같이 들었고, 미니맵 정보는 완성본 dante에만 있다
+            Report.Is("미니맵 있는 맵이 폴더 이름보다 먼저 (dante)",
+                      string.Join(", ", WorkshopMaps.PlayableOf(new[] { "dante", "italia2" }, "italia2", "Dante", new[] { "dante" })),
+                      "dante");
+            Report.Is("미니맵이 다 있으면 예전대로 폴더 이름 (shortdust)",
+                      string.Join(", ", WorkshopMaps.PlayableOf(new[] { "de_shortdust", "dust1" }, "shortdust", "Shortdust", new[] { "de_shortdust", "dust1" })),
+                      "de_shortdust");
+            Report.Is("미니맵이 하나도 없으면 예전대로",
+                      string.Join(", ", WorkshopMaps.PlayableOf(new[] { "aim_a", "aim_b" }, "aim_pack", "Aim Pack", new string[0])),
+                      "aim_a, aim_b");
             Report.Is("제목과도 안 맞으면 다 둔다",
                       string.Join(", ", WorkshopMaps.PlayableOf(new[] { "aim_a", "aim_b" }, "aim_pack", "Aim Pack")),
                       "aim_a, aim_b");
