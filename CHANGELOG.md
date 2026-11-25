@@ -1,5 +1,17 @@
 # 변경 내역 / Changelog
 
+## 1.4.5 (2026-11-25)
+
+- 새 판 알림에서 「받으러 가기」를 누르면 앱이 닫혀, 받은 파일로 바로 덮을 수 있습니다.
+- 맵이 여럿 든 창작마당 맵(Dante 등)을 앱으로 켜도 미니맵이 뜹니다.
+
+---
+
+- "Get it" on the new-version notice now closes the app, so you can replace the file right away.
+- Workshop items that bundle several maps (such as Dante) now open with their minimap.
+
+---
+
 ## 1.4.4 (2026-11-23)
 
 - 코블이 기본 맵에 들어왔습니다. 볼더·파흐베르크·쉘터는 공식 맵에서 빠졌습니다.
