@@ -92,6 +92,19 @@
     cursor: pointer;
   }
   button.copy:hover { border-color: var(--blue); }
+  /* 앱 소개로 가는 길. 접속 버튼과 겨루지 않게 테두리만 둔다 */
+  a.out {
+    display: block;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+  }
+  a.out:hover { border-color: var(--blue); }
 
   input {
     width: 100%;
@@ -177,6 +190,13 @@
 
   <p class="warn" id="warn" hidden data-t="warn"></p>
 
+  <!-- 링크를 받은 친구가 이 링크를 만든 앱으로 갈 길이 없었다(2026-11-27 디렉터 지적). 들어가는 길 아래에 둔다 -->
+  <div class="card" id="host">
+    <h2 data-t="hostH"></h2>
+    <p data-t="hostP"></p>
+    <a class="out" id="hostLink" href="/" data-t="hostGo"></a>
+  </div>
+
   <footer>
     <span data-t="footer1"></span><br>
     <span data-t="footer2"></span> <a href="https://logstone.net/cs2host/privacy/" data-t="privacy"></a>
@@ -205,6 +225,9 @@
       fallbackH: "버튼이 안 되면",
       fallbackP: "CS2를 먼저 켠 다음, 게임 안에서 <b>~</b> 키로 콘솔을 열고 아래를 붙여넣으세요. (설정 → 게임 → 개발자 콘솔 사용을 「예」로 두어야 콘솔이 열립니다)",
       copyCmd: "콘솔 명령 복사",
+      hostH: "나도 친구를 불러 연습하고 싶다면",
+      hostP: "이 링크는 CS2 Practice Host로 만들었습니다. 버튼 하나로 연습 서버를 열고, 친구에게 보낼 링크를 복사해 주는 Windows 앱입니다.",
+      hostGo: "CS2 Practice Host 받기",
       needH: "서버 주소를 붙여넣어 주세요",
       needP: "친구에게 받은 주소를 그대로 넣으면 됩니다. <b>connect</b> 가 앞에 붙어 있어도 괜찮습니다.",
       needErr: "주소 형식이 아닙니다. 받은 내용을 그대로 붙여넣어 주세요.",
@@ -230,6 +253,9 @@
       fallbackH: "If the button does nothing",
       fallbackP: "Launch CS2 first, open the console with the <b>~</b> key in game, and paste the line below. (the console only opens if Settings → Game → Enable Developer Console is set to Yes)",
       copyCmd: "Copy console command",
+      hostH: "Want to host your own practice game?",
+      hostP: "This link was made with CS2 Practice Host. One button opens a practice server and copies a link for your friends. For Windows.",
+      hostGo: "Get CS2 Practice Host",
       needH: "Please paste the server address",
       needP: "Paste what your friend sent you, as is. It is fine if <b>connect</b> is in front of it.",
       needErr: "That is not an address. Please paste exactly what you were sent.",
@@ -262,6 +288,7 @@
     document.documentElement.lang = lang;
     document.title = t("title");
     document.getElementById("lang").textContent = t("lang");
+    document.getElementById("hostLink").href = "/?lang=" + lang;
 
     var slots = document.querySelectorAll("[data-t]");
     for (var i = 0; i < slots.length; i++) slots[i].innerHTML = t(slots[i].dataset.t);
