@@ -29,6 +29,7 @@ namespace CS2PracticeHost
             StarPutsMapFirst();
             KindMarks();
             MapNotes();
+            MarksMoveBetweenPcs();
             TabsHaveTips();
             BrokenSettingsKept();
             WindowGrows();
@@ -479,6 +480,41 @@ namespace CS2PracticeHost
                 Call(form, "SetMapNote", "de_dust2", null);
                 Report.Is("지우면 빠지나", Tiles(form).First(t => t.Map.Id == "de_dust2").Note == null, true);
             }
+        }
+
+        /// <summary>별·종류·메모를 파일로 내보내 다른 PC에서 합친다(2026-11-28 디렉터). 그 PC 것은 안 지운다.</summary>
+        private static void MarksMoveBetweenPcs()
+        {
+            Report.Head("별·표시·메모 내보내기·가져오기");
+
+            string file = Path.Combine(Path.GetTempPath(), "cs2host-marks-check.json");
+            var from = new Settings();
+            from.ToggleFavorite("de_mirage");
+            from.SetKind("workshop/555/de_big_wingman", MapKind.Bomb1);
+            from.SetNote("de_mirage", "a=b 메모");
+            from.SetNote("de_nuke", "가져온 쪽");
+            from.Lang = "en";
+            from.ExportMarks(file);
+            Report.Is("언어 같은 그 PC 몫은 안 나가나", File.ReadAllText(file).Contains("\"lang\""), false);
+
+            var to = new Settings();
+            to.ToggleFavorite("de_dust2");
+            to.SetNote("de_dust2", "이 PC 것");
+            to.SetNote("de_nuke", "덮일 것");
+            int maps = to.ImportMarks(file);
+            Report.Is("가져온 맵 수", maps, 3);
+            Report.Is("별 합쳐짐", to.IsFavorite("de_mirage") && to.IsFavorite("de_dust2"), true);
+            Report.Is("종류", to.KindOf("workshop/555/de_big_wingman"), MapKind.Bomb1);
+            Report.Is("= 가 든 메모", to.NoteOf("de_mirage"), "a=b 메모");
+            Report.Is("같은 맵은 가져온 쪽으로", to.NoteOf("de_nuke"), "가져온 쪽");
+            Report.Is("이 PC에만 있던 것은 그대로", to.NoteOf("de_dust2"), "이 PC 것");
+            Report.Is("두 번 가져와도 별이 안 겹치나", (to.ImportMarks(file) == 3) && to.Favorites.Count(f => f == "de_mirage") == 1, true);
+
+            File.WriteAllText(file, "{\"mode\":\"casual\",\"favorites\":[\"de_inferno\"]}");   // 설정 파일을 잘못 고름
+            bool refused;
+            try { to.ImportMarks(file); refused = false; } catch (Exception) { refused = true; }
+            Report.Is("우리 파일이 아니면 거절", refused && !to.IsFavorite("de_inferno"), true);
+            File.Delete(file);
         }
 
         private static void TabsHaveTips()

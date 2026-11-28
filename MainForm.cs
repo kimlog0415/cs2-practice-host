@@ -852,6 +852,15 @@ namespace CS2PracticeHost
                 _kindMenu.Items.Add(drop);
             }
 
+            // 다른 PC로 옮기기 — 맵 하나가 아니라 전부라 맨 아래에 둔다
+            _kindMenu.Items.Add(new ToolStripSeparator());
+            var export = new ToolStripMenuItem(Strings.MarksExport) { ForeColor = Theme.Text };
+            export.Click += (s, e) => ExportMarks();
+            _kindMenu.Items.Add(export);
+            var import = new ToolStripMenuItem(Strings.MarksImport) { ForeColor = Theme.Text };
+            import.Click += (s, e) => ImportMarks();
+            _kindMenu.Items.Add(import);
+
             _kindMenu.Show(tile, at);
         }
 
@@ -868,6 +877,42 @@ namespace CS2PracticeHost
             _settings.SetKind(mapId, kind);
             _settings.Save();
             foreach (MapTile tile in Tiles.Where(t => t.Map.Id == mapId)) ApplyKind(tile);
+        }
+
+        private void ExportMarks()
+        {
+            using (var dialog = new SaveFileDialog())
+            {
+                dialog.Filter = Strings.MarksFilter;
+                dialog.FileName = "cs2-practice-host-marks.json";
+                dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                if (dialog.ShowDialog(this) != DialogResult.OK) return;
+                try { _settings.ExportMarks(dialog.FileName); }
+                catch (Exception) { Tell(Strings.MarksCannotSave); return; }
+                Tell(Strings.MarksExported(dialog.FileName));
+            }
+        }
+
+        /// <summary>합친 뒤 별 순서가 바뀔 수 있어서 타일을 다시 채운다(보던 칸·고른 맵은 그대로).</summary>
+        private void ImportMarks()
+        {
+            using (var dialog = new OpenFileDialog())
+            {
+                dialog.Filter = Strings.MarksFilter;
+                dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                if (dialog.ShowDialog(this) != DialogResult.OK) return;
+
+                // 읽다 실패하면 반쯤 합친 상태가 남지 않게, 지금 설정을 다시 읽은 사본에 합쳐 본다
+                Settings trial = Settings.Load();
+                int maps;
+                try { maps = trial.ImportMarks(dialog.FileName); }
+                catch (Exception) { Tell(Strings.MarksBadFile); return; }
+
+                _settings.ImportMarks(dialog.FileName);
+                _settings.Save();
+                RefillKeepingView();
+                Tell(Strings.MarksImported(maps));
+            }
         }
 
         /// <summary>메모를 타일에 싣고, 마우스를 올리면 전체가 보이게 한다.</summary>

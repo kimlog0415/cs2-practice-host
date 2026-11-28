@@ -53,6 +53,15 @@ namespace CS2PracticeHost
         public static string NoteSave { get { return T("저장", "Save"); } }
         public static string NoteCancel { get { return T("취소", "Cancel"); } }
 
+        // 별·종류·메모를 다른 PC로 옮기기(2026-11-28 디렉터)
+        public static string MarksExport { get { return T("별·표시·메모 내보내기…", "Export stars, marks and notes…"); } }
+        public static string MarksImport { get { return T("별·표시·메모 가져오기…", "Import stars, marks and notes…"); } }
+        public static string MarksFilter { get { return T("CS2 Practice Host 표시 (*.json)|*.json", "CS2 Practice Host marks (*.json)|*.json"); } }
+        public static string MarksExported(string path) { return T("내보냈어요.\n" + path + "\n\n다른 PC의 앱에서 「가져오기」로 이 파일을 고르면 돼요.", "Exported.\n" + path + "\n\nOn the other PC, choose this file with \"Import\"."); }
+        public static string MarksImported(int maps) { return T("맵 " + maps + "개의 표시를 가져왔어요. 이 PC에만 있던 표시는 그대로예요.", "Imported marks for " + maps + " maps. Marks that were only on this PC are kept."); }
+        public static string MarksBadFile { get { return T("이 앱에서 내보낸 파일이 아니에요. 아무것도 바꾸지 않았어요.", "That is not a file exported from this app. Nothing was changed."); } }
+        public static string MarksCannotSave { get { return T("파일을 저장하지 못했어요. 다른 폴더를 골라 주세요.", "Could not save the file. Please pick another folder."); } }
+
         /// <summary>모드 탭에 마우스를 올리면 뜨는 설명(디렉터 요청). 숫자는 틀리기 쉬워 넣지 않는다.</summary>
         public static string ModeTip(string modeKey)
         {

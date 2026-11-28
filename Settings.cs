@@ -96,6 +96,70 @@ namespace CS2PracticeHost
             return note.Length == 0 ? null : note;
         }
 
+        /// <summary>
+        /// 별·종류·메모만 파일로 내보낸다. 다른 PC로 옮길 때 쓴다(2026-11-28 디렉터).
+        /// 설치 폴더·언어 같은 그 PC 몫은 넣지 않는다 — 옮겨 가면 틀린 값이 된다.
+        /// </summary>
+        public void ExportMarks(string path)
+        {
+            var marks = new MarksFile
+            {
+                App = MarksFile.AppName, Version = 1,
+                Favorites = Favorites ?? new string[0], MapKinds = MapKinds ?? new string[0], MapNotes = MapNotes ?? new string[0],
+            };
+            using (var stream = File.Create(path))
+                MarksSerializer.WriteObject(stream, marks);
+        }
+
+        /// <summary>
+        /// 내보낸 파일을 지금 것에 합친다. 이 PC에만 있는 표시는 그대로 두고, 같은 맵은 가져온 쪽으로 바꾼다.
+        /// 돌려주는 값은 가져온 맵 수(별·종류·메모 중 하나라도 있는 맵). 우리 파일이 아니면 예외.
+        /// </summary>
+        public int ImportMarks(string path)
+        {
+            MarksFile marks;
+            using (var stream = File.OpenRead(path))
+                marks = (MarksFile)MarksSerializer.ReadObject(stream);
+            if (marks == null || marks.App != MarksFile.AppName) throw new InvalidDataException();
+
+            var touched = new System.Collections.Generic.HashSet<string>();
+            foreach (string id in marks.Favorites ?? new string[0])
+            {
+                if (string.IsNullOrEmpty(id)) continue;
+                if (!IsFavorite(id)) ToggleFavorite(id);
+                touched.Add(id);
+            }
+            foreach (string row in marks.MapKinds ?? new string[0])
+            {
+                string id, value;
+                if (!SplitRow(row, out id, out value)) continue;
+                SetKind(id, value);
+                touched.Add(id);
+            }
+            foreach (string row in marks.MapNotes ?? new string[0])
+            {
+                string id, value;
+                if (!SplitRow(row, out id, out value)) continue;
+                SetNote(id, value);
+                touched.Add(id);
+            }
+            return touched.Count;
+        }
+
+        /// <summary>`아이디=값`을 가른다. 아이디에는 `=`가 없고 값에는 있을 수 있어서 첫 `=`에서 자른다.</summary>
+        private static bool SplitRow(string row, out string id, out string value)
+        {
+            id = value = null;
+            int at = row == null ? -1 : row.IndexOf('=');
+            if (at <= 0 || at == row.Length - 1) return false;
+            id = row.Substring(0, at);
+            value = row.Substring(at + 1);
+            return true;
+        }
+
+        private static readonly DataContractJsonSerializer MarksSerializer =
+            new DataContractJsonSerializer(typeof(MarksFile));
+
         private static string FilePath
         {
             get
@@ -147,5 +211,18 @@ namespace CS2PracticeHost
 
         private static readonly DataContractJsonSerializer Serializer =
             new DataContractJsonSerializer(typeof(Settings));
+    }
+
+    /// <summary>내보내기 파일. `app`으로 우리 파일인지 가린다 — 엉뚱한 JSON을 골라도 설정을 건드리지 않게.</summary>
+    [DataContract]
+    internal sealed class MarksFile
+    {
+        public const string AppName = "CS2PracticeHost.marks";
+
+        [DataMember(Name = "app", Order = 0)] public string App { get; set; }
+        [DataMember(Name = "version", Order = 1)] public int Version { get; set; }
+        [DataMember(Name = "favorites", Order = 2)] public string[] Favorites { get; set; }
+        [DataMember(Name = "mapKinds", Order = 3)] public string[] MapKinds { get; set; }
+        [DataMember(Name = "mapNotes", Order = 4)] public string[] MapNotes { get; set; }
     }
 }
