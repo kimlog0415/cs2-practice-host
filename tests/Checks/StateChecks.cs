@@ -32,6 +32,14 @@ namespace CS2PracticeHost
             }
             Report.Note("가짜 cs2.exe: " + _dummy);
 
+            // 진짜 게임이 켜져 있으면 이 묶음은 돌리지 않는다. 예전에는 끝날 때 cs2 이름을 전부 꺼서
+            // 디렉터가 하던 게임을 두 번 껐다(2026-11-28). 켜진 게임이 있으면 상태 판단도 틀어진다
+            if (RealGameRunning())
+            {
+                Report.Fail("진짜 CS2가 켜져 있어 상태 확인은 건너뛴다 — 게임을 끈 뒤 state만 다시 돌려라");
+                return;
+            }
+
             try
             {
                 RetakeLocksBotOptions();
@@ -192,6 +200,19 @@ namespace CS2PracticeHost
                                "\"level\":\"1\",\"team\":\"any\",\"installDir\":null,\"lang\":\"ko\"}");
         }
 
+        private static bool IsDummy(Process p)
+        {
+            try { return string.Equals(Path.GetFullPath(p.MainModule.FileName), Path.GetFullPath(_dummy), StringComparison.OrdinalIgnoreCase); }
+            catch (Exception) { return false; }   // 경로를 못 읽으면 남의 것으로 보고 안 건드린다
+        }
+
+        private static bool RealGameRunning()
+        {
+            foreach (Process p in Process.GetProcessesByName("cs2"))
+                if (!IsDummy(p)) return true;
+            return false;
+        }
+
         private static void Start(string arguments)
         {
             Process p = Process.Start(new ProcessStartInfo(_dummy, arguments)
@@ -211,8 +232,10 @@ namespace CS2PracticeHost
         /// </summary>
         private static void KillDummies()
         {
+            // 가짜 exe 경로와 같은 것만 끈다. 이름만 보고 끄면 진짜 게임도 꺼진다(2026-11-28 실제로 났다)
             foreach (Process p in Process.GetProcessesByName("cs2"))
             {
+                if (!IsDummy(p)) continue;
                 try { p.Kill(); p.WaitForExit(5000); } catch (Exception) { }
             }
             for (int i = 0; i < 40 && Cs2Process.Find() != null; i++) Thread.Sleep(50);
