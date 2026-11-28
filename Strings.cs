@@ -42,7 +42,8 @@ namespace CS2PracticeHost
         public static string MarkBomb2 { get { return T("폭탄 · 지점 2곳", "Bomb · 2 sites"); } }
         public static string MarkHostage { get { return T("인질", "Hostage"); } }
         public static string MarkOther { get { return T("기타", "Other"); } }
-        public static string MarkClear { get { return T("표시 지우기", "Clear"); } }
+        // 「표시」는 별·메모와 섞여 무엇을 지우는지 몰랐다 — 종류로 부른다(2026-11-29 처음 보는 눈)
+        public static string MarkClear { get { return T("종류 지우기", "Clear type"); } }
 
         // 타일 오른쪽 클릭 — 메모(2026-11-28 디렉터, 썸네일만으로는 찾기 힘들다)
         public static string NoteAdd { get { return T("메모 달기…", "Add note…"); } }
@@ -56,6 +57,7 @@ namespace CS2PracticeHost
         // 맵 찾기 — 검색과 종류 거르기(2026-11-28 디렉터)
         public static string FilterSearch { get { return T("찾기", "Search"); } }
         public static string FilterSearchTip { get { return T("맵 이름이나 메모로 찾아요", "Find by map name or note"); } }
+        public static string FilterSearchCue { get { return T("이름·메모", "Name, note"); } }
         public static string FilterKind { get { return T("종류", "Type"); } }
         public static string FilterAll { get { return T("전체", "All"); } }
         public static string FilterBomb1 { get { return T("폭탄 1곳", "Bomb · 1"); } }
@@ -65,11 +67,11 @@ namespace CS2PracticeHost
         public static string FilterNoMatch { get { return T("맞는 맵이 없어요", "No maps match"); } }
 
         // 별·종류·메모를 다른 PC로 옮기기(2026-11-28 디렉터)
-        public static string MarksExport { get { return T("별·표시·메모 내보내기…", "Export stars, marks and notes…"); } }
-        public static string MarksImport { get { return T("별·표시·메모 가져오기…", "Import stars, marks and notes…"); } }
-        public static string MarksFilter { get { return T("CS2 Practice Host 표시 (*.json)|*.json", "CS2 Practice Host marks (*.json)|*.json"); } }
+        public static string MarksExport { get { return T("별·종류·메모 내보내기…", "Export stars, types and notes…"); } }
+        public static string MarksImport { get { return T("별·종류·메모 가져오기…", "Import stars, types and notes…"); } }
+        public static string MarksFilter { get { return T("CS2 Practice Host 별·종류·메모 (*.json)|*.json", "CS2 Practice Host stars, types and notes (*.json)|*.json"); } }
         public static string MarksExported(string path) { return T("내보냈어요.\n" + path + "\n\n다른 PC의 앱에서 「가져오기」로 이 파일을 고르면 돼요.", "Exported.\n" + path + "\n\nOn the other PC, choose this file with \"Import\"."); }
-        public static string MarksImported(int maps) { return T("맵 " + maps + "개의 표시를 가져왔어요. 이 PC에만 있던 표시는 그대로예요.", "Imported marks for " + maps + " maps. Marks that were only on this PC are kept."); }
+        public static string MarksImported(int maps) { return T("맵 " + maps + "개의 별·종류·메모를 가져왔어요. 이 PC에만 있던 것은 그대로예요.", "Imported stars, types and notes for " + maps + " maps. Anything only on this PC is kept."); }
         public static string MarksBadFile { get { return T("이 앱에서 내보낸 파일이 아니에요. 아무것도 바꾸지 않았어요.", "That is not a file exported from this app. Nothing was changed."); } }
         public static string MarksCannotSave { get { return T("파일을 저장하지 못했어요. 다른 폴더를 골라 주세요.", "Could not save the file. Please pick another folder."); } }
 

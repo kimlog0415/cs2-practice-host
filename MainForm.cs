@@ -596,6 +596,7 @@ namespace CS2PracticeHost
             _searchLabel.Text = Strings.FilterSearch;
             _kindFilterLabel.Text = Strings.FilterKind;
             _tips.SetToolTip(_search, Strings.FilterSearchTip);
+            SetCue(_search, Strings.FilterSearchCue);
             _tips.SetToolTip(_kindFilter, Strings.FilterKindTip);
             int keep = Math.Max(0, _kindFilter.SelectedIndex);
             _filling = true;
@@ -782,6 +783,20 @@ namespace CS2PracticeHost
                 tab.ForeColor = tab.Checked ? Theme.Gold : Theme.SubText;
                 tab.Font = new Font(Strings.UiFont, 10.5f, tab.Checked ? FontStyle.Bold : FontStyle.Regular);
             }
+        }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, string lParam);
+
+        /// <summary>
+        /// 빈 칸에 흐린 안내 글(EM_SETCUEBANNER). 비어 있는 「찾기」 칸은 무엇을 치는 곳인지 안 보였다(2026-11-29 처음 보는 눈).
+        /// 핸들이 아직 없으면 생길 때 단다.
+        /// </summary>
+        private static void SetCue(TextBox box, string cue)
+        {
+            const int EM_SETCUEBANNER = 0x1501;
+            if (box.IsHandleCreated) SendMessage(box.Handle, EM_SETCUEBANNER, (IntPtr)1, cue);
+            else box.HandleCreated += (s, e) => SendMessage(box.Handle, EM_SETCUEBANNER, (IntPtr)1, cue);
         }
 
         /// <summary>언어를 바꿀 때 종류 칸을 다시 채우는 동안은 거르기를 다시 돌리지 않는다.</summary>
@@ -1040,17 +1055,17 @@ namespace CS2PracticeHost
                 dialog.BackColor = Theme.Panel;
                 dialog.ForeColor = Theme.Text;
                 dialog.Font = new Font(Strings.UiFont, 10);
-                dialog.ClientSize = new Size(420, 132);
+                dialog.ClientSize = new Size(420, 150);
 
                 var hint = new Label { Text = Strings.NoteHint, ForeColor = Theme.SubText, AutoSize = false,
-                                       Location = new Point(14, 12), Size = new Size(392, 22) };
+                                       Location = new Point(14, 10), Size = new Size(392, 40) };   // 영어는 한 줄에 안 들어갔다(처음 보는 눈)
                 var box = new TextBox { Text = _settings.NoteOf(mapId) ?? "", MaxLength = Settings.NoteMaxLength,
-                                        Location = new Point(14, 40), Size = new Size(392, 26),
+                                        Location = new Point(14, 56), Size = new Size(392, 26),
                                         BackColor = Theme.Well, ForeColor = Theme.Text, BorderStyle = BorderStyle.FixedSingle };
                 var save = new Button { Text = Strings.NoteSave, DialogResult = DialogResult.OK,
-                                        Location = new Point(222, 84), Size = new Size(88, 32) };
+                                        Location = new Point(222, 102), Size = new Size(88, 32) };
                 var cancel = new Button { Text = Strings.NoteCancel, DialogResult = DialogResult.Cancel,
-                                          Location = new Point(318, 84), Size = new Size(88, 32) };
+                                          Location = new Point(318, 102), Size = new Size(88, 32) };
                 Theme.Flat(save, Theme.Gold, Theme.Gold, Theme.OnGold);
                 Theme.Flat(cancel, Theme.Panel, Theme.Edge, Theme.Text);
                 dialog.Controls.AddRange(new Control[] { hint, box, save, cancel });

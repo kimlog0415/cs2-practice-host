@@ -36,6 +36,7 @@ namespace CS2PracticeHost
                 if (mode == "all" || mode == "notices") NoticeChecks.Run();
                 if (mode == "all" || mode == "state") StateChecks.Run(args.Skip(1).FirstOrDefault());
                 if (mode == "all" || mode == "update") UpdateChecks.Run();
+                if (mode == "shots") Shots.Run(args.Skip(1).FirstOrDefault());   // all에는 안 든다 — 확인이 아니라 볼 그림
             }
             catch (Exception ex)
             {
