@@ -309,10 +309,13 @@ namespace CS2PracticeHost
         public static string Combo(Form form, string name) { return Field<ComboBox>(form, name).Text; }
         public static bool Enabled(Form form, string name) { return Field<ComboBox>(form, name).Enabled; }
 
-        /// <summary>줄 이름 라벨. 띠가 0번이라 하나 밀어 센다.</summary>
+        /// <summary>
+        /// 줄 이름 라벨(봇 수·난이도·팀). 예전엔 창의 라벨 순서로 셌는데, 찾기·종류 라벨이 생기며 밀렸다(2026-11-29).
+        /// 앱이 들고 있는 목록에서 바로 읽는다.
+        /// </summary>
         public static string RowLabel(Form form, int index)
         {
-            return form.Controls.OfType<Label>().ElementAt(index + 1).Text;
+            return Field<System.Collections.Generic.List<Label>>(form, "_rowLabels")[index].Text;
         }
 
         public static Button Button(Form form, int index)
