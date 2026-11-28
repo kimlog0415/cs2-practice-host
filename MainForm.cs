@@ -31,6 +31,13 @@ namespace CS2PracticeHost
         private readonly RadioButton _kindBuiltIn = new RadioButton();
         private readonly RadioButton _kindWorkshop = new RadioButton();
 
+        // 맵 찾기 — 이름·메모 검색과 종류 거르기. 썸네일만으로는 찾기 힘들다(2026-11-28 디렉터). 저장하지 않는다
+        private readonly Label _searchLabel = new Label();
+        private readonly TextBox _search = new TextBox();
+        private readonly Label _kindFilterLabel = new Label();
+        private readonly ComboBox _kindFilter = new Theme.DarkCombo();
+        private static readonly string[] KindFilterValues = { null, MapKind.Bomb1, MapKind.Bomb2, MapKind.Hostage, MapKind.Other };
+
         /// <summary>지금 타일 칸에 보이는 쪽. 기본 맵과 창작마당을 왼쪽 탭으로 갈라 하나씩 보여 준다.</summary>
         private bool _showWorkshop;
 
@@ -371,6 +378,39 @@ namespace CS2PracticeHost
             _kindBuiltIn.Click += (s, e) => ShowKind(false);
             _kindWorkshop.Click += (s, e) => ShowKind(true);
 
+            // 왼쪽 탭 아래 빈자리에 찾기·종류를 둔다. 타일 칸 위에 두면 타일 한 줄이 줄어든다
+            foreach (Label caption in new[] { _searchLabel, _kindFilterLabel })
+            {
+                caption.AutoSize = true;
+                caption.ForeColor = Theme.SubText;
+                caption.BackColor = Color.Transparent;
+                caption.Font = new Font(Strings.UiFont, 8.5f);
+                Controls.Add(caption);
+            }
+            _searchLabel.Location = new Point(20, y + 4);
+            _search.Location = new Point(20, y + 22);
+            _search.Size = new Size(96, 26);
+            _search.BackColor = Theme.Panel;
+            _search.ForeColor = Theme.Text;
+            _search.BorderStyle = BorderStyle.FixedSingle;
+            _search.TextChanged += (s, e) => ApplyFilter();
+            _search.KeyDown += (s, e) => { if (e.KeyCode == Keys.Escape) { _search.Clear(); e.SuppressKeyPress = true; } };
+            Controls.Add(_search);
+
+            _kindFilterLabel.Location = new Point(20, y + 60);
+            _kindFilter.DropDownStyle = ComboBoxStyle.DropDownList;
+            _kindFilter.FlatStyle = FlatStyle.Flat;
+            _kindFilter.BackColor = Theme.Panel;
+            _kindFilter.ForeColor = Theme.Text;
+            _kindFilter.Location = new Point(20, y + 78);
+            _kindFilter.Width = 96;
+            _kindFilter.DropDownWidth = 120;
+            _kindFilter.ItemHeight = 24;
+            _kindFilter.DrawMode = DrawMode.OwnerDrawFixed;
+            _kindFilter.DrawItem += DrawComboItem;
+            _kindFilter.SelectedIndexChanged += (s, e) => ApplyFilter();
+            Controls.Add(_kindFilter);
+
             // 윈도우 기본 스크롤바는 어두운 화면에서 흰 막대로 튀었다(디렉터 지적). 타일 칸을 그 막대 폭만큼
             // 넓혀 바깥 틀에 가려지게 하고, 대신 얇은 막대(_thumb)를 직접 그린다
             _tileHost.Location = new Point(128, 112);
@@ -553,6 +593,17 @@ namespace CS2PracticeHost
 
             SyncKindTabs();
 
+            _searchLabel.Text = Strings.FilterSearch;
+            _kindFilterLabel.Text = Strings.FilterKind;
+            _tips.SetToolTip(_search, Strings.FilterSearchTip);
+            _tips.SetToolTip(_kindFilter, Strings.FilterKindTip);
+            int keep = Math.Max(0, _kindFilter.SelectedIndex);
+            _filling = true;
+            _kindFilter.Items.Clear();
+            _kindFilter.Items.AddRange(new object[] { Strings.FilterAll, Strings.FilterBomb1, Strings.FilterBomb2, Strings.MarkHostage, Strings.FilterOther });
+            _kindFilter.SelectedIndex = keep;
+            _filling = false;
+
             _lang.Text = Strings.LangToggle;
             _launch.Text = Strings.Launch;
             _copyLink.Text = Strings.CopyLink;
@@ -733,6 +784,44 @@ namespace CS2PracticeHost
             }
         }
 
+        /// <summary>언어를 바꿀 때 종류 칸을 다시 채우는 동안은 거르기를 다시 돌리지 않는다.</summary>
+        private bool _filling;
+
+        private void ApplyFilter()
+        {
+            if (_filling || _loading) return;
+            RenderTiles();
+            GameMap selected = SelectedMap;
+            foreach (MapTile tile in Tiles) tile.Selected = selected != null && tile.Map.Id == selected.Id;
+        }
+
+        private bool Filtering
+        {
+            get { return _search.Text.Trim().Length > 0 || _kindFilter.SelectedIndex > 0; }
+        }
+
+        /// <summary>
+        /// 찾기 — 이름(한·영)·맵 파일 이름·메모에서 대소문자 없이. 종류 — 단 표시가 먼저, 없으면 이름 앞부분 짐작.
+        /// 짐작한 폭탄 맵(`de_`)은 지점 수를 모르지만 거의 2곳이라 「2곳」에 넣는다. 「기타」에는 표시 없는 맵도 넣는다.
+        /// </summary>
+        private bool PassesFilter(GameMap map)
+        {
+            string query = _search.Text.Trim();
+            if (query.Length > 0)
+            {
+                string hay = string.Join(" ", map.TileName, map.Ko, map.En, map.Id, map.WorkshopMapName, _settings.NoteOf(map.Id));
+                if (hay.IndexOf(query, StringComparison.OrdinalIgnoreCase) < 0) return false;
+            }
+
+            int pick = _kindFilter.SelectedIndex;
+            if (pick <= 0) return true;
+            string want = KindFilterValues[pick];
+            string kind = _settings.KindOf(map.Id) ?? MapKind.Guess(map);
+            if (kind == MapKind.Bomb) kind = MapKind.Bomb2;
+            if (want == MapKind.Other) return kind == MapKind.Other || kind == null;
+            return kind == want;
+        }
+
         /// <summary>_maps 중 왼쪽 탭이 가리키는 쪽만 타일로.</summary>
         private void RenderTiles()
         {
@@ -743,6 +832,7 @@ namespace CS2PracticeHost
             for (int i = 0; i < _maps.Length; i++)
             {
                 if (_maps[i].IsWorkshop != _showWorkshop) continue;
+                if (!PassesFilter(_maps[i])) continue;
                 int index = i;
                 var tile = new MapTile(_maps[i]) { Favorite = _settings.IsFavorite(_maps[i].Id) };
                 ApplyKind(tile);
@@ -756,6 +846,13 @@ namespace CS2PracticeHost
 
             // 스크롤 범위가 마지막 줄 타일의 아래 여백·칸 안쪽 여백을 안 쳐서, 끝까지 내려도 맨 아랫줄 이름이
             // 잘렸다(B 실기). 마지막 타일 뒤에서 줄을 끊고 빈 칸 하나를 둬 그만큼 더 내려가게 한다
+            if (!Tiles.Any() && Filtering)
+                _tileArea.Controls.Add(new Label
+                {
+                    Text = Strings.FilterNoMatch, AutoSize = true, ForeColor = Theme.SubText,
+                    BackColor = Color.Transparent, Margin = new Padding(10, 12, 0, 0),
+                });
+
             MapTile last = _tileArea.Controls.OfType<MapTile>().LastOrDefault();
             if (last != null)
             {

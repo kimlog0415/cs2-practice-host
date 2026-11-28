@@ -30,6 +30,7 @@ namespace CS2PracticeHost
             KindMarks();
             MapNotes();
             MarksMoveBetweenPcs();
+            MapFilter();
             TabsHaveTips();
             BrokenSettingsKept();
             WindowGrows();
@@ -515,6 +516,48 @@ namespace CS2PracticeHost
             try { to.ImportMarks(file); refused = false; } catch (Exception) { refused = true; }
             Report.Is("우리 파일이 아니면 거절", refused && !to.IsFavorite("de_inferno"), true);
             File.Delete(file);
+        }
+
+        /// <summary>찾기(이름·메모)와 종류 거르기(2026-11-28 디렉터). 창작마당 칸의 aim_botz·de_big_wingman으로 본다.</summary>
+        private static void MapFilter()
+        {
+            Report.Head("맵 찾기 — 이름·메모 검색, 종류 거르기");
+
+            using (MainForm form = Open("casual", "de_dust2"))
+            {
+                ComboBox kindBox = Peek.Field<ComboBox>(form, "_kindFilter");
+                kindBox.SelectedIndex = 2;   // 기본 맵 칸에서 폭탄 2곳 — de_로 짐작한 기본 맵이 들어오나
+                Report.Is("기본 맵 de_dust2가 폭탄 2곳에", Tiles(form).Any(t => t.Map.Id == "de_dust2"), true);
+                Report.Is("폭탄 2곳에 cs_ 맵은 없나", Tiles(form).Any(t => t.Map.Id.StartsWith("cs_")), false);
+                kindBox.SelectedIndex = 0;
+
+                ShowWorkshop(form);
+                TextBox search = Peek.Field<TextBox>(form, "_search");
+                ComboBox kind = Peek.Field<ComboBox>(form, "_kindFilter");
+                Func<string> shown = () => string.Join(",", Tiles(form).Select(t => t.Map.WorkshopMapName).OrderBy(n => n));
+                string all = shown();
+
+                search.Text = "BOTZ";
+                Report.Is("이름으로(대소문자 무시)", shown(), "aim_botz");
+
+                Call(form, "SetMapNote", "workshop/3070596071/aim_botz", "에임 연습용");
+                search.Text = "에임";
+                Report.Is("메모로", shown(), "aim_botz");
+
+                search.Text = "없는맵이름";
+                Report.Is("맞는 게 없으면 안내", Tiles(form).Any() == false &&
+                          Peek.Field<FlowLayoutPanel>(form, "_tileArea").Controls.OfType<Label>().Any(), true);
+
+                search.Text = "";
+                kind.SelectedIndex = 4;   // 기타 — 표시 없는 맵도
+                Report.Is("기타에 표시 없는 맵(aim_botz)", shown().Split(',').Contains("aim_botz"), true);
+                kind.SelectedIndex = 3;   // 인질
+                Report.Is("인질에 aim_botz는 없나", shown().Split(',').Contains("aim_botz"), false);
+                kind.SelectedIndex = 0;
+                Report.Is("전체로 돌리면 다 보이나", shown(), all);
+
+                Call(form, "SetMapNote", "workshop/3070596071/aim_botz", null);
+            }
         }
 
         private static void TabsHaveTips()

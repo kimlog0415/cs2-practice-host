@@ -53,6 +53,17 @@ namespace CS2PracticeHost
         public static string NoteSave { get { return T("저장", "Save"); } }
         public static string NoteCancel { get { return T("취소", "Cancel"); } }
 
+        // 맵 찾기 — 검색과 종류 거르기(2026-11-28 디렉터)
+        public static string FilterSearch { get { return T("찾기", "Search"); } }
+        public static string FilterSearchTip { get { return T("맵 이름이나 메모로 찾아요", "Find by map name or note"); } }
+        public static string FilterKind { get { return T("종류", "Type"); } }
+        public static string FilterAll { get { return T("전체", "All"); } }
+        public static string FilterBomb1 { get { return T("폭탄 1곳", "Bomb · 1"); } }
+        public static string FilterBomb2 { get { return T("폭탄 2곳", "Bomb · 2"); } }
+        public static string FilterOther { get { return T("기타", "Other"); } }
+        public static string FilterKindTip { get { return T("「폭탄 2곳」에는 흐린 폭탄 딱지(de_로 짐작한 맵)도, 「기타」에는 표시 없는 맵도 들어가요", "\"Bomb · 2\" also includes maps guessed from de_ (faint bomb mark); \"Other\" also includes unmarked maps"); } }
+        public static string FilterNoMatch { get { return T("맞는 맵이 없어요", "No maps match"); } }
+
         // 별·종류·메모를 다른 PC로 옮기기(2026-11-28 디렉터)
         public static string MarksExport { get { return T("별·표시·메모 내보내기…", "Export stars, marks and notes…"); } }
         public static string MarksImport { get { return T("별·표시·메모 가져오기…", "Import stars, marks and notes…"); } }
