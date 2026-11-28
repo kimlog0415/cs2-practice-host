@@ -746,6 +746,7 @@ namespace CS2PracticeHost
                 int index = i;
                 var tile = new MapTile(_maps[i]) { Favorite = _settings.IsFavorite(_maps[i].Id) };
                 ApplyKind(tile);
+                ApplyNote(tile);
                 tile.Click += (s, e) => _map.SelectedIndex = index;
                 tile.StarClicked += (s, e) => ToggleFavorite(((MapTile)s).Map.Id);
                 tile.MouseUp += (s, e) => { if (e.Button == MouseButtons.Right && !((MapTile)s).IsDisposed) ShowKindMenu((MapTile)s, e.Location); };
@@ -837,6 +838,20 @@ namespace CS2PracticeHost
             clear.Click += (s, e) => SetMapKind(id, null);
             _kindMenu.Items.Add(clear);
 
+            // 메모 — 종류와 따로 단다
+            _kindMenu.Items.Add(new ToolStripSeparator());
+            string note = _settings.NoteOf(id);
+            string label = tile.Map.TileName;
+            var write = new ToolStripMenuItem(note == null ? Strings.NoteAdd : Strings.NoteEdit) { ForeColor = Theme.Text };
+            write.Click += (s, e) => EditNote(id, label);
+            _kindMenu.Items.Add(write);
+            if (note != null)
+            {
+                var drop = new ToolStripMenuItem(Strings.NoteClear) { ForeColor = Theme.Text };
+                drop.Click += (s, e) => SetMapNote(id, null);
+                _kindMenu.Items.Add(drop);
+            }
+
             _kindMenu.Show(tile, at);
         }
 
@@ -853,6 +868,56 @@ namespace CS2PracticeHost
             _settings.SetKind(mapId, kind);
             _settings.Save();
             foreach (MapTile tile in Tiles.Where(t => t.Map.Id == mapId)) ApplyKind(tile);
+        }
+
+        /// <summary>메모를 타일에 싣고, 마우스를 올리면 전체가 보이게 한다.</summary>
+        private void ApplyNote(MapTile tile)
+        {
+            tile.Note = _settings.NoteOf(tile.Map.Id);
+            _tips.SetToolTip(tile, tile.Note);
+        }
+
+        private void SetMapNote(string mapId, string note)
+        {
+            _settings.SetNote(mapId, note);
+            _settings.Save();
+            foreach (MapTile tile in Tiles.Where(t => t.Map.Id == mapId)) ApplyNote(tile);
+        }
+
+        /// <summary>한 줄 메모 창. 비우고 저장하면 지운 것으로 본다.</summary>
+        private void EditNote(string mapId, string mapLabel)
+        {
+            using (var dialog = new Form())
+            {
+                dialog.Text = Strings.NoteTitle(mapLabel);
+                dialog.FormBorderStyle = FormBorderStyle.FixedDialog;
+                dialog.StartPosition = FormStartPosition.CenterParent;
+                dialog.MinimizeBox = false;
+                dialog.MaximizeBox = false;
+                dialog.ShowInTaskbar = false;
+                dialog.BackColor = Theme.Panel;
+                dialog.ForeColor = Theme.Text;
+                dialog.Font = new Font(Strings.UiFont, 10);
+                dialog.ClientSize = new Size(420, 132);
+
+                var hint = new Label { Text = Strings.NoteHint, ForeColor = Theme.SubText, AutoSize = false,
+                                       Location = new Point(14, 12), Size = new Size(392, 22) };
+                var box = new TextBox { Text = _settings.NoteOf(mapId) ?? "", MaxLength = Settings.NoteMaxLength,
+                                        Location = new Point(14, 40), Size = new Size(392, 26),
+                                        BackColor = Theme.Well, ForeColor = Theme.Text, BorderStyle = BorderStyle.FixedSingle };
+                var save = new Button { Text = Strings.NoteSave, DialogResult = DialogResult.OK,
+                                        Location = new Point(222, 84), Size = new Size(88, 32) };
+                var cancel = new Button { Text = Strings.NoteCancel, DialogResult = DialogResult.Cancel,
+                                          Location = new Point(318, 84), Size = new Size(88, 32) };
+                Theme.Flat(save, Theme.Gold, Theme.Gold, Theme.OnGold);
+                Theme.Flat(cancel, Theme.Panel, Theme.Edge, Theme.Text);
+                dialog.Controls.AddRange(new Control[] { hint, box, save, cancel });
+                dialog.AcceptButton = save;
+                dialog.CancelButton = cancel;
+                dialog.Shown += (s, e) => { box.Focus(); box.SelectAll(); };
+
+                if (dialog.ShowDialog(this) == DialogResult.OK) SetMapNote(mapId, box.Text);
+            }
         }
 
         private IEnumerable<MapTile> Tiles

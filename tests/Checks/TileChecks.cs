@@ -28,6 +28,7 @@ namespace CS2PracticeHost
             PictureShowsWhenSaved();
             StarPutsMapFirst();
             KindMarks();
+            MapNotes();
             TabsHaveTips();
             BrokenSettingsKept();
             WindowGrows();
@@ -452,6 +453,31 @@ namespace CS2PracticeHost
                 ShowWorkshop(form);
                 MapTile botz = Tiles(form).First(t => t.Map.WorkshopId == "3070596071");
                 Report.Is("앞부분 없는 창작마당 맵(aim_botz)은 딱지 없음", botz.Kind == null, true);
+            }
+        }
+
+        /// <summary>오른쪽 클릭으로 단 메모가 타일에 실리고, 지우면 빠지나(2026-11-28 디렉터).</summary>
+        private static void MapNotes()
+        {
+            Report.Head("맵 메모 — 달기·고치기·지우기");
+
+            Report.Is("줄바꿈·앞뒤 공백 정리", Settings.CleanNote("  에임\r\n연습  "), "에임 연습");
+            Report.Is("빈 메모는 없음으로", Settings.CleanNote("   ") == null, true);
+            Report.Is("길면 자름", Settings.CleanNote(new string('가', 80)).Length, Settings.NoteMaxLength);
+
+            using (MainForm form = Open("casual", "de_dust2"))
+            {
+                Call(form, "SetMapNote", "de_dust2", "친구랑 3대3");
+                Report.Is("타일에 실렸나", Tiles(form).First(t => t.Map.Id == "de_dust2").Note, "친구랑 3대3");
+                Report.Is("설정에 남았나", Settings.Load().NoteOf("de_dust2"), "친구랑 3대3");
+                Report.Is("다른 맵은 그대로", Tiles(form).First(t => t.Map.Id != "de_dust2").Note == null, true);
+
+                Call(form, "SetMapNote", "de_dust2", "a=b 들어가도");
+                Report.Is("고치면 하나만 남나", Settings.Load().MapNotes.Count(r => r.StartsWith("de_dust2=")), 1);
+                Report.Is("= 가 든 메모", Settings.Load().NoteOf("de_dust2"), "a=b 들어가도");
+
+                Call(form, "SetMapNote", "de_dust2", null);
+                Report.Is("지우면 빠지나", Tiles(form).First(t => t.Map.Id == "de_dust2").Note == null, true);
             }
         }
 

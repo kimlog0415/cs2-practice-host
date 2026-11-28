@@ -29,6 +29,14 @@ namespace CS2PracticeHost
         /// </summary>
         [DataMember(Name = "mapKinds")] public string[] MapKinds { get; set; }
 
+        /// <summary>
+        /// 사용자가 맵에 단 메모, `아이디=메모` 꼴. 썸네일만으로는 맵을 찾기 힘들다고 해서 넣었다
+        /// (2026-11-28 디렉터). 한 줄짜리라 줄바꿈은 저장 전에 공백으로 바꾼다.
+        /// </summary>
+        [DataMember(Name = "mapNotes")] public string[] MapNotes { get; set; }
+
+        public const int NoteMaxLength = 60;
+
         public bool IsFavorite(string mapId)
         {
             return Favorites != null && Array.IndexOf(Favorites, mapId) >= 0;
@@ -58,6 +66,34 @@ namespace CS2PracticeHost
             list.RemoveAll(row => row != null && row.StartsWith(mapId + "=", StringComparison.Ordinal));
             if (kind != null) list.Add(mapId + "=" + kind);
             MapKinds = list.ToArray();
+        }
+
+        /// <summary>사용자가 단 메모. 없으면 null.</summary>
+        public string NoteOf(string mapId)
+        {
+            if (MapNotes == null) return null;
+            string prefix = mapId + "=";
+            foreach (string row in MapNotes)
+                if (row != null && row.StartsWith(prefix, StringComparison.Ordinal)) return row.Substring(prefix.Length);
+            return null;
+        }
+
+        /// <summary>note가 비었으면 메모를 지운다. 줄바꿈은 공백으로, 길면 자른다.</summary>
+        public void SetNote(string mapId, string note)
+        {
+            note = CleanNote(note);
+            var list = new System.Collections.Generic.List<string>(MapNotes ?? new string[0]);
+            list.RemoveAll(row => row != null && row.StartsWith(mapId + "=", StringComparison.Ordinal));
+            if (note != null) list.Add(mapId + "=" + note);
+            MapNotes = list.ToArray();
+        }
+
+        public static string CleanNote(string note)
+        {
+            if (note == null) return null;
+            note = System.Text.RegularExpressions.Regex.Replace(note, @"\s+", " ").Trim();
+            if (note.Length > NoteMaxLength) note = note.Substring(0, NoteMaxLength).TrimEnd();
+            return note.Length == 0 ? null : note;
         }
 
         private static string FilePath

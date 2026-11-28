@@ -44,6 +44,15 @@ namespace CS2PracticeHost
         public static string MarkOther { get { return T("기타", "Other"); } }
         public static string MarkClear { get { return T("표시 지우기", "Clear"); } }
 
+        // 타일 오른쪽 클릭 — 메모(2026-11-28 디렉터, 썸네일만으로는 찾기 힘들다)
+        public static string NoteAdd { get { return T("메모 달기…", "Add note…"); } }
+        public static string NoteEdit { get { return T("메모 고치기…", "Edit note…"); } }
+        public static string NoteClear { get { return T("메모 지우기", "Remove note"); } }
+        public static string NoteTitle(string map) { return T("메모 — ", "Note — ") + map; }
+        public static string NoteHint { get { return T("타일에 보일 한 줄 메모 (예: 에임 연습, 친구랑 3대3)", "A one-line note shown on the tile (e.g. aim practice, 3v3 with friends)"); } }
+        public static string NoteSave { get { return T("저장", "Save"); } }
+        public static string NoteCancel { get { return T("취소", "Cancel"); } }
+
         /// <summary>모드 탭에 마우스를 올리면 뜨는 설명(디렉터 요청). 숫자는 틀리기 쉬워 넣지 않는다.</summary>
         public static string ModeTip(string modeKey)
         {

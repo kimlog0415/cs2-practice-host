@@ -36,6 +36,7 @@ namespace CS2PracticeHost
         private bool _favorite;
         private string _kind;
         private bool _kindGuessed;
+        private string _note;
         private Point _pressedAt;
         private MouseButtons _pressedButton;
 
@@ -80,6 +81,13 @@ namespace CS2PracticeHost
         }
 
         public string Kind { get { return _kind; } }
+
+        /// <summary>사용자가 단 메모. 왼쪽 위에 한 줄로 보이고(넘치면 …), 마우스를 올리면 전체가 뜬다.</summary>
+        public string Note
+        {
+            get { return _note; }
+            set { if (_note != value) { _note = value; Invalidate(); } }
+        }
         public bool KindGuessed { get { return _kindGuessed; } }
 
         protected override void OnMouseDown(MouseEventArgs e)
@@ -159,6 +167,7 @@ namespace CS2PracticeHost
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis |
                     TextFormatFlags.SingleLine);
 
+            DrawNote(g);
             DrawStar(g);
 
             // 고른 칸은 굵은 파란 테두리(오른쪽 위는 별 자리라 체크는 없다). 굵기가 달라 색을 못 가려도 보인다
@@ -180,6 +189,33 @@ namespace CS2PracticeHost
             Rectangle box = StarBox;
             if (!_favorite && !_hover) { DrawStarShape(g, box, Color.FromArgb(150, Theme.Text), false, 90); return; }
             DrawStarShape(g, box, _favorite ? Theme.Gold : Theme.Text, _favorite, 170);
+        }
+
+        /// <summary>
+        /// 메모 — 왼쪽 위, 별 자리 앞까지. 그림이 밝아도 읽히게 어두운 띠를 깔고, 글자 폭만큼만 깐다
+        /// (그림을 덜 가리게).
+        /// </summary>
+        private void DrawNote(Graphics g)
+        {
+            if (string.IsNullOrEmpty(_note)) return;
+            float sc = UiScale;
+            int pad = (int)(4 * sc);
+            int maxWidth = StarBox.Left - pad * 2;
+            using (var font = new Font(Strings.UiFont, 8.5f * sc))
+            {
+                const TextFormatFlags flags = TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
+                                              TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine |
+                                              TextFormatFlags.NoPrefix;
+                Size need = TextRenderer.MeasureText(g, _note, font, new Size(int.MaxValue, 0), flags);
+                int height = (int)(20 * sc);
+                int width = Math.Min(maxWidth, need.Width + pad * 2);
+                var band = new Rectangle(pad, pad, width, height);
+                using (GraphicsPath path = Theme.Rounded(band, (int)(4 * sc)))
+                using (var back = new SolidBrush(Color.FromArgb(200, Theme.Bottom)))
+                    g.FillPath(back, path);
+                TextRenderer.DrawText(g, _note, font, new Rectangle(band.X + pad, band.Y, band.Width - pad * 2, band.Height),
+                                      Theme.Gold, flags);
+            }
         }
 
         private static void DrawStarShape(Graphics g, Rectangle box, Color color, bool filled, int backAlpha)
